@@ -2,6 +2,33 @@ import { clearAndPlaceCharacters } from './character.js'; // 仮のインポー�
 
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
 
+export const ALLY_CHARACTERS = [
+    { id: 'DK', name: 'ドラゴンナイト' },
+    { id: 'IG', name: 'インペリアルガード' },
+    { id: 'AG', name: 'アークメイジ' },
+    { id: 'EM', name: 'エレメンタルマスター' },
+    { id: 'MT', name: 'マイスター' },
+    { id: 'BO', name: 'バイオロ' },
+    { id: 'SH', name: 'シャドウクロス' },
+    { id: 'AY', name: 'アビスチェイサー' },
+    { id: 'CD', name: 'カーディナル' },
+    { id: 'IQ', name: 'インクイジター' },
+    { id: 'SY', name: '天帝' },
+    { id: 'ST', name: 'ソウルアセティック' },
+    { id: 'SS-M', name: '蜃気楼' },
+    { id: 'SS-F', name: '不知火' },
+    { id: 'WH', name: 'ウィンドホーク' },
+    { id: 'TT-M', name: 'トルバドゥール' },
+    { id: 'TT-F', name: 'トルヴェール' },
+    { id: 'NW', name: 'ナイトウォッチ' },
+    { id: 'HN', name: 'ハイパーノービス' },
+    { id: 'SD', name: 'スピリットハンドラー' }
+];
+
+export const ENEMY_CHARACTERS = [
+    { id: 'player', name: '対戦相手' },
+];
+
 export function simulateFormation(resultText) {
     let allyCount = 0;
     let enemyCount = 0;

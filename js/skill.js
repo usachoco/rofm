@@ -1,5 +1,5 @@
 import { placedCharacters } from './data.js';
-import { gridSize } from './grid.js';
+import { gridWidth, gridHeight } from './grid.js';
 import { clearSelectedCharacter } from './character.js'; // clearSelectedCharacterをインポート
 
 export let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
@@ -103,7 +103,7 @@ export function getSkillAffectedCells(centerX, centerY, skillSize) {
             const targetY = centerY + i;
 
             // グリッド範囲内にあるかチェック
-            if (targetX >= 0 && targetX < gridSize && targetY >= 0 && targetY < gridSize) {
+            if (targetX >= 0 && targetX < gridWidth && targetY >= 0 && targetY < gridHeight) {
                 cells.push({ x: targetX, y: targetY });
             }
         }

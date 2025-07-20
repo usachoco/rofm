@@ -16,22 +16,13 @@
         <aside class="sidebar">
             <h2>キャラクター選択</h2>
             <div class="character-selection">
-                <button class="char-btn" data-char="knight">ナイト</button>
-                <button class="char-btn" data-char="priest">プリースト</button>
-                <button class="char-btn" data-char="wizard">ウィザード</button>
-                <button class="char-btn" data-char="archer">アーチャー</button>
-                     <button class="char-btn" data-char="assassin">アサシン</button>
-                     <button class="char-btn" data-char="blacksmith">ブラックスミス</button>
-                 </div>
-                 <h2>敵キャラクター選択</h2>
-                 <div class="enemy-selection">
-                     <button class="char-btn enemy-btn" data-char="poring">ポリン</button>
-                     <button class="char-btn enemy-btn" data-char="lunatic">ルナティック</button>
-                     <button class="char-btn enemy-btn" data-char="goblin">ゴブリン</button>
-                 </div>
+            </div>
+            <h2>敵キャラクター選択</h2>
+            <div class="enemy-selection">
+            </div>
                  <h2>設定</h2>
             <div class="settings">
-                <label><input type="checkbox" id="show-grid-lines"> グリッド線を表示</label>
+                <label><input type="checkbox" id="show-grid-lines" checked> グリッド線を表示</label>
                 <label><input type="checkbox" id="enable-collision"> 衝突判定を有効にする</label>
             </div>
             <h2>スキルシミュレーション</h2>
@@ -52,8 +43,6 @@
         <section class="formation-area">
             <h2>PT配置シミュレーション</h2>
             <div class="grid-container" id="formation-grid">
-                <!-- グリッドセルはJavaScriptで生成されるか、ここに直接記述されます -->
-                <!-- 例: <div class="grid-cell" data-x="0" data-y="0"></div> -->
             </div>
             <div class="simulation-results">
                 <h3>シミュレーション結果</h3>

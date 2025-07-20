@@ -1,9 +1,14 @@
-export const gridSize = 40; // 40x40グリッド
+export const gridWidth = 48;
+export const gridHeight = 27;
 
-export function createGrid(formationGrid, showGridLinesCheckbox) {
+export function createGrid(formationGrid, showGridLinesCheckbox, width = gridWidth, height = gridHeight) {
     formationGrid.innerHTML = '';
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
+    // グリッドのCSS変数を設定
+    formationGrid.style.setProperty('--grid-width', width);
+    formationGrid.style.setProperty('--grid-height', height);
+
+    for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
             const cell = document.createElement('div');
             cell.classList.add('grid-cell');
             cell.dataset.x = j;
