@@ -6,9 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterButtons = document.querySelectorAll('.char-btn');
     const resultText = document.getElementById('result-text');
 
+    const exportDataButton = document.getElementById('export-data');
+    const importDataInput = document.getElementById('import-data-input');
+    const importDataButton = document.getElementById('import-data-button');
+    const copyUrlButton = document.getElementById('copy-url-button');
+
     const gridSize = 10; // 10x10グリッド
     let selectedCharacter = null;
-    const placedCharacters = {}; // { "x-y": "characterName" }
+    let selectedCharacterType = null; // 'ally' or 'enemy'
+    const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
 
     // グリッドの生成
     function createGrid() {
@@ -27,6 +33,44 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGridLines();
     }
 
+    // グリッドをクリアしてキャラクターを配置するヘルパー関数
+    function clearAndPlaceCharacters(charactersToPlace) {
+        // 現在の配置を全てクリア
+        formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
+            cell.classList.remove('has-character');
+            const charIcon = cell.querySelector('.character-icon');
+            if (charIcon) {
+                cell.removeChild(charIcon);
+            }
+            // 以前のキャラクタータイプクラスを削除
+            for (const key in placedCharacters) {
+                const charType = placedCharacters[key].type;
+                const charName = placedCharacters[key].name;
+                cell.classList.remove(`${charType}-${charName}`);
+            }
+        });
+        for (const key in placedCharacters) {
+            delete placedCharacters[key];
+        }
+
+        // 新しいキャラクターを配置
+        for (const key in charactersToPlace) {
+            const char = charactersToPlace[key];
+            const [x, y] = key.split('-');
+            const cell = formationGrid.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            if (cell) {
+                const charIcon = document.createElement('span');
+                charIcon.classList.add('character-icon');
+                charIcon.textContent = char.name.substring(0, 2).toUpperCase();
+                cell.appendChild(charIcon);
+                cell.classList.add('has-character');
+                cell.classList.add(`${char.type}-${char.name}`);
+                placedCharacters[key] = { name: char.name, type: char.type };
+            }
+        }
+        simulateFormation();
+    }
+
     // グリッド線の表示/非表示を切り替える
     function updateGridLines() {
         if (showGridLinesCheckbox.checked) {
@@ -40,14 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // キャラクター選択ボタンのイベントリスナー
-    characterButtons.forEach(button => {
+    // キャラクター選択ボタンと敵キャラクター選択ボタンのイベントリスナー
+    document.querySelectorAll('.char-btn').forEach(button => {
         button.addEventListener('click', () => {
             // 選択状態の切り替え
-            characterButtons.forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
             selectedCharacter = button.dataset.char;
-            resultText.textContent = `${selectedCharacter} が選択されました。グリッドをクリックして配置してください。`;
+            selectedCharacterType = button.classList.contains('enemy-btn') ? 'enemy' : 'ally';
+            resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) が選択されました。グリッドをクリックして配置してください。`;
         });
     });
 
@@ -58,9 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = cell.dataset.y;
         const cellKey = `${x}-${y}`;
 
-        if (selectedCharacter) {
+        if (selectedCharacter && selectedCharacterType) {
             if (placedCharacters[cellKey] && enableCollisionCheckbox.checked) {
-                resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey]}が配置されています。衝突判定が有効です。`;
+                resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。衝突判定が有効です。`;
                 return;
             }
 
@@ -71,6 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.removeChild(existingChar);
                 }
                 cell.classList.remove('has-character');
+                // 以前のキャラクタータイプクラスを削除
+                if (placedCharacters[cellKey]) {
+                    cell.classList.remove(`${placedCharacters[cellKey].type}-${placedCharacters[cellKey].name}`);
+                }
                 delete placedCharacters[cellKey];
             }
 
@@ -80,8 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             charIcon.textContent = selectedCharacter.substring(0, 2).toUpperCase(); // キャラクター名の頭2文字を表示
             cell.appendChild(charIcon);
             cell.classList.add('has-character');
-            placedCharacters[cellKey] = selectedCharacter;
-            resultText.textContent = `${selectedCharacter} を (${x},${y}) に配置しました。`;
+            cell.classList.add(`${selectedCharacterType}-${selectedCharacter}`); // タイプとキャラクター名に応じたクラスを追加
+            placedCharacters[cellKey] = { name: selectedCharacter, type: selectedCharacterType };
+            resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) を (${x},${y}) に配置しました。`;
             simulateFormation();
         } else {
             resultText.textContent = 'キャラクターを選択してください。';
@@ -98,11 +148,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         selectedCharacter = null;
+        selectedCharacterType = null;
         for (const key in placedCharacters) {
+            const charType = placedCharacters[key].type;
+            const charName = placedCharacters[key].name;
+            const cell = formationGrid.querySelector(`[data-x="${key.split('-')[0]}"][data-y="${key.split('-')[1]}"]`);
+            if (cell) {
+                cell.classList.remove(`${charType}-${charName}`);
+            }
             delete placedCharacters[key];
         }
-        characterButtons.forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
         resultText.textContent = '配置がリセットされました。';
+        clearAndPlaceCharacters({}); // 全ての配置をクリア
     });
 
     // グリッド線表示チェックボックスのイベントリスナー
@@ -110,18 +168,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // シミュレーションロジック（仮）
     function simulateFormation() {
+        let allyCount = 0;
+        let enemyCount = 0;
         let simulationOutput = '現在の配置: ';
+
         if (Object.keys(placedCharacters).length === 0) {
             simulationOutput += 'キャラクターは配置されていません。';
         } else {
             for (const key in placedCharacters) {
-                simulationOutput += `${placedCharacters[key]}@${key} `;
+                const char = placedCharacters[key];
+                simulationOutput += `${char.name}(${char.type === 'ally' ? '味方' : '敵'})@${key} `;
+                if (char.type === 'ally') {
+                    allyCount++;
+                } else {
+                    enemyCount++;
+                }
             }
         }
-        resultText.textContent = simulationOutput;
+        resultText.textContent = `${simulationOutput} (味方: ${allyCount}, 敵: ${enemyCount})`;
+    }
+
+    // データのエクスポート
+    exportDataButton.addEventListener('click', () => {
+        const data = JSON.stringify(placedCharacters);
+        importDataInput.value = data;
+        resultText.textContent = '配置データをテキストエリアにエクスポートしました。';
+    });
+
+    // データのインポート
+    importDataButton.addEventListener('click', () => {
+        try {
+            const dataString = importDataInput.value;
+            const importedCharacters = JSON.parse(dataString);
+            clearAndPlaceCharacters(importedCharacters);
+            resultText.textContent = '配置データをインポートしました。';
+        } catch (e) {
+            resultText.textContent = 'インポートデータが無効です。JSON形式を確認してください。';
+            console.error('Import error:', e);
+        }
+    });
+
+    // URLをコピー
+    copyUrlButton.addEventListener('click', () => {
+        const data = JSON.stringify(placedCharacters);
+        const encodedData = btoa(encodeURIComponent(data)); // Base64エンコード
+        const url = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
+        navigator.clipboard.writeText(url).then(() => {
+            resultText.textContent = '現在の配置を含むURLをクリップボードにコピーしました。';
+        }).catch(err => {
+            resultText.textContent = 'URLのコピーに失敗しました。';
+            console.error('Copy URL error:', err);
+        });
+    });
+
+    // URLからのデータインポート（ページロード時）
+    function importFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const encodedData = params.get('data');
+        if (encodedData) {
+            try {
+                const decodedData = decodeURIComponent(atob(encodedData)); // Base64デコード
+                const importedCharacters = JSON.parse(decodedData);
+                clearAndPlaceCharacters(importedCharacters);
+                resultText.textContent = 'URLから配置データをインポートしました。';
+            } catch (e) {
+                resultText.textContent = 'URLからのデータインポートに失敗しました。データが破損している可能性があります。';
+                console.error('URL import error:', e);
+            }
+        }
     }
 
     // 初期化
     createGrid();
+    importFromUrl(); // URLからのインポートを試みる
     simulateFormation(); // 初期状態のシミュレーション結果を表示
 });

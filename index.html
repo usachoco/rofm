@@ -20,15 +20,28 @@
                 <button class="char-btn" data-char="priest">プリースト</button>
                 <button class="char-btn" data-char="wizard">ウィザード</button>
                 <button class="char-btn" data-char="archer">アーチャー</button>
-                <button class="char-btn" data-char="assassin">アサシン</button>
-                <button class="char-btn" data-char="blacksmith">ブラックスミス</button>
-            </div>
-            <h2>設定</h2>
+                     <button class="char-btn" data-char="assassin">アサシン</button>
+                     <button class="char-btn" data-char="blacksmith">ブラックスミス</button>
+                 </div>
+                 <h2>敵キャラクター選択</h2>
+                 <div class="enemy-selection">
+                     <button class="char-btn enemy-btn" data-char="poring">ポリン</button>
+                     <button class="char-btn enemy-btn" data-char="lunatic">ルナティック</button>
+                     <button class="char-btn enemy-btn" data-char="goblin">ゴブリン</button>
+                 </div>
+                 <h2>設定</h2>
             <div class="settings">
                 <label><input type="checkbox" id="show-grid-lines"> グリッド線を表示</label>
                 <label><input type="checkbox" id="enable-collision"> 衝突判定を有効にする</label>
-            </div>
-            <button id="reset-formation">配置をリセット</button>
+                 </div>
+                 <h2>データ共有</h2>
+                 <div class="data-sharing">
+                     <button id="export-data">配置をエクスポート</button>
+                     <textarea id="import-data-input" placeholder="ここにインポートデータを貼り付けてください" rows="4"></textarea>
+                     <button id="import-data-button">配置をインポート</button>
+                     <button id="copy-url-button">URLをコピー</button>
+                 </div>
+                 <button id="reset-formation">配置をリセット</button>
         </aside>
 
         <section class="formation-area">

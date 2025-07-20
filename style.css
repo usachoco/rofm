@@ -63,9 +63,59 @@ main {
     background-color: #0056b3;
 }
 
+.char-btn.selected {
+    background-color: #0056b3;
+    color: white;
+}
+
+.enemy-btn {
+    background-color: #dc3545; /* 敵キャラクター用の色 */
+}
+
+.enemy-btn:hover {
+    background-color: #c82333;
+}
+
+.enemy-btn.selected {
+    background-color: #a00000; /* 選択された敵キャラクターの色 */
+    color: white;
+}
+
 .settings label {
     display: block;
     margin-bottom: 10px;
+}
+
+.data-sharing {
+    margin-bottom: 20px;
+}
+
+.data-sharing button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+
+.data-sharing button:hover {
+    background-color: #218838;
+}
+
+.data-sharing textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+    font-family: monospace;
 }
 
 #reset-formation {
@@ -131,6 +181,19 @@ main {
 .grid-cell.has-character {
     background-color: #a0e0a0; /* キャラクターが配置されたセルの色 */
 }
+
+/* 味方キャラクターのスタイル */
+.grid-cell.ally-knight { background-color: #b3e0ff; } /* 薄い青 */
+.grid-cell.ally-priest { background-color: #ffe0b3; } /* 薄いオレンジ */
+.grid-cell.ally-wizard { background-color: #e0b3ff; } /* 薄い紫 */
+.grid-cell.ally-archer { background-color: #b3ffb3; } /* 薄い緑 */
+.grid-cell.ally-assassin { background-color: #cccccc; } /* 薄いグレー */
+.grid-cell.ally-blacksmith { background-color: #ffc2b3; } /* 薄い赤茶 */
+
+/* 敵キャラクターのスタイル */
+.grid-cell.enemy-poring { background-color: #ffb3b3; } /* 薄い赤 */
+.grid-cell.enemy-lunatic { background-color: #ffccb3; } /* 薄いオレンジ */
+.grid-cell.enemy-goblin { background-color: #b3b3ff; } /* 薄い青紫 */
 
 .simulation-results {
     margin-top: 20px;
