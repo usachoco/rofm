@@ -151,24 +151,24 @@ main {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(10, 50px); /* 例: 10x10のグリッド */
-    grid-template-rows: repeat(10, 50px);
+    grid-template-columns: repeat(40, 15px); /* 40x40のグリッド */
+    grid-template-rows: repeat(40, 15px);
     border: 1px solid #ccc;
-    width: 500px; /* 10 * 50px */
-    height: 500px; /* 10 * 50px */
+    width: 600px; /* 40 * 15px */
+    height: 600px; /* 40 * 15px */
     margin: 20px auto;
     background-color: #e9e9e9;
 }
 
 .grid-cell {
-    width: 50px;
-    height: 50px;
+    width: 15px;
+    height: 15px;
     border: 1px solid #ddd;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.8em;
+    font-size: 0.6em; /* セルサイズに合わせて調整 */
     color: #666;
     cursor: pointer;
     transition: background-color 0.1s;
@@ -180,6 +180,10 @@ main {
 
 .grid-cell.has-character {
     background-color: #a0e0a0; /* キャラクターが配置されたセルの色 */
+}
+
+.character-icon {
+    pointer-events: none; /* クリックイベントを透過させる */
 }
 
 /* 味方キャラクターのスタイル */

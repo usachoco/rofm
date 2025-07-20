@@ -1,4 +1,4 @@
-export const gridSize = 10; // 10x10グリッド
+export const gridSize = 40; // 40x40グリッド
 
 export function createGrid(formationGrid, showGridLinesCheckbox) {
     formationGrid.innerHTML = '';
@@ -8,7 +8,6 @@ export function createGrid(formationGrid, showGridLinesCheckbox) {
             cell.classList.add('grid-cell');
             cell.dataset.x = j;
             cell.dataset.y = i;
-            cell.textContent = `${j},${i}`; // デバッグ用に座標を表示
             // イベントリスナーはmain.jsで設定するため、ここでは追加しない
             formationGrid.appendChild(cell);
         }
