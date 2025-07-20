@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const importDataInput = document.getElementById('import-data-input');
     const importDataButton = document.getElementById('import-data-button');
     const copyUrlButton = document.getElementById('copy-url-button');
+    const skillButtons = document.querySelectorAll('.skill-btn'); // スキルボタンのDOM要素
 
     const gridSize = 10; // 10x10グリッド
     let selectedCharacter = null;
     let selectedCharacterType = null; // 'ally' or 'enemy'
+    let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
     const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
 
     // グリッドの生成
@@ -27,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.dataset.y = i;
                 cell.textContent = `${j},${i}`; // デバッグ用に座標を表示
                 cell.addEventListener('click', handleCellClick);
+                cell.addEventListener('mouseover', handleCellMouseOver); // マウスオーバーイベントを追加
+                cell.addEventListener('mouseout', handleCellMouseOut);   // マウスアウトイベントを追加
                 formationGrid.appendChild(cell);
             }
         }
@@ -92,49 +96,137 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.add('selected');
             selectedCharacter = button.dataset.char;
             selectedCharacterType = button.classList.contains('enemy-btn') ? 'enemy' : 'ally';
+
+            // スキル選択を解除
+            skillButtons.forEach(btn => btn.classList.remove('selected'));
+            selectedSkillSize = null;
+
             resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) が選択されました。グリッドをクリックして配置してください。`;
         });
     });
 
+    // スキル選択ボタンのイベントリスナー
+    skillButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 選択状態の切り替え
+            skillButtons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+            selectedSkillSize = parseInt(button.dataset.skillSize);
+
+            // キャラクター選択を解除
+            document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
+            selectedCharacter = null;
+            selectedCharacterType = null;
+
+            resultText.textContent = `${selectedSkillSize}x${selectedSkillSize}スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
+        });
+    });
+
+    // スキル範囲のハイライト表示
+    function handleCellMouseOver(event) {
+        if (selectedSkillSize) {
+            clearSkillHighlights(); // 既存のハイライトをクリア
+            const cell = event.target;
+            const centerX = parseInt(cell.dataset.x);
+            const centerY = parseInt(cell.dataset.y);
+
+            const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkillSize);
+            affectedCells.forEach(coord => {
+                const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                if (targetCell) {
+                    targetCell.classList.add('skill-highlight');
+                }
+            });
+        }
+    }
+
+    // スキル範囲のハイライト解除
+    function handleCellMouseOut() {
+        clearSkillHighlights();
+    }
+
+    // スキルハイライトをクリアするヘルパー関数
+    function clearSkillHighlights() {
+        formationGrid.querySelectorAll('.grid-cell.skill-highlight').forEach(cell => {
+            cell.classList.remove('skill-highlight');
+        });
+        formationGrid.querySelectorAll('.grid-cell.skill-target').forEach(cell => {
+            cell.classList.remove('skill-target');
+        });
+        formationGrid.querySelectorAll('.grid-cell.skill-affected').forEach(cell => {
+            cell.classList.remove('skill-affected');
+        });
+    }
+
     // グリッドセルクリック時の処理
     function handleCellClick(event) {
         const cell = event.target;
-        const x = cell.dataset.x;
-        const y = cell.dataset.y;
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
         const cellKey = `${x}-${y}`;
 
+        clearSkillHighlights(); // クリック時にハイライトをクリア
+
         if (selectedCharacter && selectedCharacterType) {
+            // キャラクター配置ロジック（既存）
             if (placedCharacters[cellKey] && enableCollisionCheckbox.checked) {
                 resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。衝突判定が有効です。`;
                 return;
             }
 
-            // 既にキャラクターが配置されているセルからキャラクターを削除
             if (cell.classList.contains('has-character')) {
                 const existingChar = cell.querySelector('.character-icon');
                 if (existingChar) {
                     cell.removeChild(existingChar);
                 }
                 cell.classList.remove('has-character');
-                // 以前のキャラクタータイプクラスを削除
                 if (placedCharacters[cellKey]) {
                     cell.classList.remove(`${placedCharacters[cellKey].type}-${placedCharacters[cellKey].name}`);
                 }
                 delete placedCharacters[cellKey];
             }
 
-            // 新しいキャラクターを配置
             const charIcon = document.createElement('span');
             charIcon.classList.add('character-icon');
-            charIcon.textContent = selectedCharacter.substring(0, 2).toUpperCase(); // キャラクター名の頭2文字を表示
+            charIcon.textContent = selectedCharacter.substring(0, 2).toUpperCase();
             cell.appendChild(charIcon);
             cell.classList.add('has-character');
-            cell.classList.add(`${selectedCharacterType}-${selectedCharacter}`); // タイプとキャラクター名に応じたクラスを追加
+            cell.classList.add(`${selectedCharacterType}-${selectedCharacter}`);
             placedCharacters[cellKey] = { name: selectedCharacter, type: selectedCharacterType };
             resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) を (${x},${y}) に配置しました。`;
             simulateFormation();
+
+        } else if (selectedSkillSize) {
+            // スキル発動ロジック
+            cell.classList.add('skill-target'); // ターゲットセルをハイライト
+
+            const affectedCells = getSkillAffectedCells(x, y, selectedSkillSize);
+            let affectedCharacters = [];
+
+            affectedCells.forEach(coord => {
+                const key = `${coord.x}-${coord.y}`;
+                if (placedCharacters[key]) {
+                    affectedCharacters.push(placedCharacters[key]);
+                    const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                    if (affectedCellElement) {
+                        affectedCellElement.classList.add('skill-affected'); // 影響を受けるキャラクターがいるセルをハイライト
+                    }
+                }
+            });
+
+            if (affectedCharacters.length > 0) {
+                const charNames = affectedCharacters.map(char => `${char.name}(${char.type === 'ally' ? '味方' : '敵'})`).join(', ');
+                resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
+            } else {
+                resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
+            }
+
+            // スキル発動後、選択状態を解除
+            skillButtons.forEach(btn => btn.classList.remove('selected'));
+            selectedSkillSize = null;
+
         } else {
-            resultText.textContent = 'キャラクターを選択してください。';
+            resultText.textContent = 'キャラクターまたはスキルを選択してください。';
         }
     }
 
@@ -186,6 +278,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         resultText.textContent = `${simulationOutput} (味方: ${allyCount}, 敵: ${enemyCount})`;
+    }
+
+    // スキル影響範囲のセル座標を計算するヘルパー関数
+    function getSkillAffectedCells(centerX, centerY, skillSize) {
+        const cells = [];
+        const offset = Math.floor(skillSize / 2);
+
+        for (let i = -offset; i <= offset; i++) {
+            for (let j = -offset; j <= offset; j++) {
+                const targetX = centerX + j;
+                const targetY = centerY + i;
+
+                // グリッド範囲内にあるかチェック
+                if (targetX >= 0 && targetX < gridSize && targetY >= 0 && targetY < gridSize) {
+                    cells.push({ x: targetX, y: targetY });
+                }
+            }
+        }
+        return cells;
     }
 
     // データのエクスポート

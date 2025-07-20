@@ -215,3 +215,49 @@ footer {
     color: white;
     margin-top: auto;
 }
+
+/* スキル選択ボタンのスタイル */
+.skill-selection {
+    margin-bottom: 20px;
+}
+
+.skill-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #6c757d; /* グレー */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+
+.skill-btn:hover {
+    background-color: #5a6268;
+}
+
+.skill-btn.selected {
+    background-color: #17a2b8; /* シアン */
+    color: white;
+}
+
+/* スキル範囲のハイライトスタイル */
+.grid-cell.skill-highlight {
+    background-color: rgba(255, 255, 0, 0.3); /* 半透明の黄色 */
+    border: 1px dashed #ffc107;
+}
+
+/* スキル発動のターゲットセル */
+.grid-cell.skill-target {
+    background-color: rgba(255, 165, 0, 0.5); /* 半透明のオレンジ */
+    border: 2px solid #ff8c00;
+}
+
+/* スキルによって影響を受けるキャラクターがいるセル */
+.grid-cell.skill-affected {
+    outline: 2px solid #dc3545; /* 赤い枠線 */
+    outline-offset: -2px;
+}
