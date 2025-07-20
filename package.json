@@ -1,0 +1,19 @@
+{
+  "name": "rofm",
+  "version": "1.0.0",
+  "description": "ROFM(Ragnarok Online Formation Maker)はラグナロクオンラインのPT配置をシミュレーションするためのツールです。\r ポストGvGFMを意識して開発しています。",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.28.0",
+    "babel-jest": "^30.0.4",
+    "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4"
+  }
+}
