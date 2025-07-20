@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // キャラクター選択ボタンと敵キャラクター選択ボタンのイベントリスナー
     document.querySelectorAll('.char-btn').forEach(button => {
         button.addEventListener('click', () => {
+            clearSkillHighlights(); // 新しい操作開始時にハイライトをクリア
             // 選択状態の切り替え
             document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
@@ -108,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // スキル選択ボタンのイベントリスナー
     skillButtons.forEach(button => {
         button.addEventListener('click', () => {
+            clearSkillHighlights(); // 新しい操作開始時にハイライトをクリア
             // 選択状態の切り替え
             skillButtons.forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
@@ -142,7 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // スキル範囲のハイライト解除
     function handleCellMouseOut() {
-        clearSkillHighlights();
+        // マウスアウト時は、スキルが選択されている場合のみハイライトをクリア
+        // スキル発動後のハイライトは残すため、ここではクリアしない
+        if (selectedSkillSize) {
+            clearSkillHighlights();
+        }
     }
 
     // スキルハイライトをクリアするヘルパー関数
@@ -165,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = parseInt(cell.dataset.y);
         const cellKey = `${x}-${y}`;
 
-        clearSkillHighlights(); // クリック時にハイライトをクリア
+        // clearSkillHighlights(); // クリック時にハイライトをクリア (ここから移動)
 
         if (selectedCharacter && selectedCharacterType) {
             // キャラクター配置ロジック（既存）
@@ -198,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else if (selectedSkillSize) {
             // スキル発動ロジック
+            clearSkillHighlights(); // スキル発動前に既存のハイライトをクリア
             cell.classList.add('skill-target'); // ターゲットセルをハイライト
 
             const affectedCells = getSkillAffectedCells(x, y, selectedSkillSize);
@@ -205,12 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             affectedCells.forEach(coord => {
                 const key = `${coord.x}-${coord.y}`;
+                const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                if (affectedCellElement) {
+                    affectedCellElement.classList.add('skill-affected'); // スキル影響範囲内のすべてのセルをハイライト
+                }
                 if (placedCharacters[key]) {
                     affectedCharacters.push(placedCharacters[key]);
-                    const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
-                    if (affectedCellElement) {
-                        affectedCellElement.classList.add('skill-affected'); // 影響を受けるキャラクターがいるセルをハイライト
-                    }
                 }
             });
 
@@ -253,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
         resultText.textContent = '配置がリセットされました。';
         clearAndPlaceCharacters({}); // 全ての配置をクリア
+        clearSkillHighlights(); // リセット時にもスキルハイライトをクリア
     });
 
     // グリッド線表示チェックボックスのイベントリスナー

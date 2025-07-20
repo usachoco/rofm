@@ -246,8 +246,7 @@ footer {
 
 /* スキル範囲のハイライトスタイル */
 .grid-cell.skill-highlight {
-    background-color: rgba(255, 255, 0, 0.3); /* 半透明の黄色 */
-    border: 1px dashed #ffc107;
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 0, 0.7); /* 内側に黄色い枠線 */
 }
 
 /* スキル発動のターゲットセル */
@@ -258,6 +257,5 @@ footer {
 
 /* スキルによって影響を受けるキャラクターがいるセル */
 .grid-cell.skill-affected {
-    outline: 2px solid #dc3545; /* 赤い枠線 */
-    outline-offset: -2px;
+    box-shadow: inset 0 0 0 3px #dc3545; /* 内側に赤い枠線 */
 }
