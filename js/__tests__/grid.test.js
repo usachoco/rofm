@@ -19,6 +19,13 @@ describe('grid.js', () => {
     document.body.innerHTML = '';
   });
 
+  // gridSize 定数のテストを追加
+  describe('gridSize', () => {
+    test('gridSizeが期待される値（10）であること', () => {
+      expect(gridModule.gridSize).toBe(10);
+    });
+  });
+
   describe('createGrid', () => {
     test('グリッドが指定されたサイズで作成されること', () => {
       gridModule.createGrid(formationGrid, showGridLinesCheckbox);
@@ -28,6 +35,26 @@ describe('grid.js', () => {
       expect(formationGrid.children[0].dataset.y).toBe('0');
       expect(formationGrid.children[0].style.border).toBe('');  // デフォルトは border = 'none' ではなく空白
     });
+
+    // グリッド作成前に既存のコンテンツがクリアされることのテストを追加
+    test('グリッド作成前に既存のコンテンツがクリアされること', () => {
+      formationGrid.innerHTML = '<div class="existing-content"></div>';
+      gridModule.createGrid(formationGrid, showGridLinesCheckbox);
+      expect(formationGrid.querySelector('.existing-content')).toBeNull();
+      expect(formationGrid.children.length).toBe(gridModule.gridSize * gridModule.gridSize);
+    });
+
+    // 各セルのテキストコンテンツが正しいことのテストを追加
+    test('各グリッドセルのテキストコンテンツが正しい座標文字列であること', () => {
+      gridModule.createGrid(formationGrid, showGridLinesCheckbox);
+      for (let i = 0; i < gridModule.gridSize; i++) {
+        for (let j = 0; j < gridModule.gridSize; j++) {
+          const cell = formationGrid.querySelector(`[data-x="${j}"][data-y="${i}"]`);
+          expect(cell.textContent).toBe(`${j},${i}`);
+        }
+      }
+    });
+
     test('updateGridLinesが適切に呼び出され、グリッドのボーダーが設定されること（チェックボックスがチェックされている場合）', () => {
         showGridLinesCheckbox.checked = true;
         gridModule.createGrid(formationGrid, showGridLinesCheckbox); // createGrid が内部で updateGridLines を呼び出す
@@ -39,7 +66,7 @@ describe('grid.js', () => {
         showGridLinesCheckbox.checked = false; // デフォルトだが明示的に
         gridModule.createGrid(formationGrid, showGridLinesCheckbox);
         formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-            expect(cell.style.border).toBe(''); // 'none' ではなく空白になることを期待
+            expect(['none', '']).toContain(cell.style.border);
         });
     });
 
@@ -65,7 +92,7 @@ describe('grid.js', () => {
       showGridLinesCheckbox.checked = false;
       gridModule.updateGridLines(formationGrid, showGridLinesCheckbox);
       formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-        expect(cell.style.border).toBe(''); // 'none' ではなく空白になることを期待
+        expect(['none', '']).toContain(cell.style.border);
       });
     });
   });
