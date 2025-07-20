@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROFM - Ragnarok Online Formation Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ROFM - Ragnarok Online Formation Maker</h1>
+        <p>ラグナロクオンラインのPT配置をシミュレーションするツール</p>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <h2>キャラクター選択</h2>
+            <div class="character-selection">
+                <button class="char-btn" data-char="knight">ナイト</button>
+                <button class="char-btn" data-char="priest">プリースト</button>
+                <button class="char-btn" data-char="wizard">ウィザード</button>
+                <button class="char-btn" data-char="archer">アーチャー</button>
+                <button class="char-btn" data-char="assassin">アサシン</button>
+                <button class="char-btn" data-char="blacksmith">ブラックスミス</button>
+            </div>
+            <h2>設定</h2>
+            <div class="settings">
+                <label><input type="checkbox" id="show-grid-lines"> グリッド線を表示</label>
+                <label><input type="checkbox" id="enable-collision"> 衝突判定を有効にする</label>
+            </div>
+            <button id="reset-formation">配置をリセット</button>
+        </aside>
+
+        <section class="formation-area">
+            <h2>PT配置シミュレーション</h2>
+            <div class="grid-container" id="formation-grid">
+                <!-- グリッドセルはJavaScriptで生成されるか、ここに直接記述されます -->
+                <!-- 例: <div class="grid-cell" data-x="0" data-y="0"></div> -->
+            </div>
+            <div class="simulation-results">
+                <h3>シミュレーション結果</h3>
+                <p id="result-text">ここにシミュレーション結果が表示されます。</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 ROFM Project</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
