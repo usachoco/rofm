@@ -17,9 +17,9 @@ export const ALLY_CHARACTERS = [
     { id: 'ST', name: 'ソウルアセティック' },
     { id: 'SS-M', name: '蜃気楼' },
     { id: 'SS-F', name: '不知火' },
-    { id: 'WH', name: 'ウィンドホーク' },
     { id: 'TT-M', name: 'トルバドゥール' },
     { id: 'TT-F', name: 'トルヴェール' },
+    { id: 'WH', name: 'ウィンドホーク' },
     { id: 'NW', name: 'ナイトウォッチ' },
     { id: 'HN', name: 'ハイパーノービス' },
     { id: 'SD', name: 'スピリットハンドラー' }
