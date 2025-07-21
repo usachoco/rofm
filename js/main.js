@@ -40,16 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterButtons = document.querySelectorAll('.char-btn');
 
     // UI要素をまとめて渡す
-    setupUI({
+        setupUI({
         formationGrid,
         showGridLinesCheckbox,
         enableCollisionCheckbox,
         resetFormationButton,
         characterButtons, // 更新されたcharacterButtonsを渡す
         resultText,
-        exportDataButton,
-        importDataInput,
-        importDataButton,
         copyUrlButton,
         skillButtons
     });

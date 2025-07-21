@@ -12,9 +12,36 @@ body {
 header {
     background-color: #4CAF50;
     color: white;
-    padding: 1em 0;
-    text-align: center;
+    padding: 0.5em 1em; /* 左右にパディングを追加 */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex; /* ヘッダーコンテナをflexにする */
+    align-items: center; /* アイテムを垂直方向中央揃え */
+    justify-content: space-between; /* アイテムを両端に配置 */
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* URLコピーボタンのスタイル */
+#copy-url-button {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 8px; /* ボタンのパディング */
+    border: 1px white solid;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em; /* フォントサイズを調整 */
+    transition: background-color 0.2s;
+    white-space: nowrap; /* テキストの折り返しを防ぐ */
+    margin-left: auto; /* 右端に配置 */
+}
+
+#copy-url-button:hover {
+    background-color: #0056b3; /* ホバー時の色 */
 }
 
 main {

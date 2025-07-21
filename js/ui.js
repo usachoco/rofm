@@ -29,12 +29,6 @@ export function setupUI(elements) {
         resultText.textContent = '配置がリセットされました。';
     });
 
-    // データのエクスポート
-    exportDataButton.addEventListener('click', () => exportData(importDataInput, resultText));
-
-    // データのインポート
-    importDataButton.addEventListener('click', () => importData(importDataInput, formationGrid, resultText));
-
     // URLをコピー
     copyUrlButton.addEventListener('click', () => copyUrl(resultText));
 }
