@@ -1,3 +1,5 @@
+import { mapData, CELL_STATUS } from './data.js';
+
 export const gridWidth = 48;
 export const gridHeight = 27;
 
@@ -13,6 +15,14 @@ export function createGrid(formationGrid, showGridLinesCheckbox, width = gridWid
             cell.classList.add('grid-cell');
             cell.dataset.x = j;
             cell.dataset.y = i;
+            // マップデータに基づいてセルのステータスを設定
+            const cellStatus = mapData[i][j];
+            if (cellStatus === (CELL_STATUS.UNWALKABLE | CELL_STATUS.OBSTACLE)) {
+                cell.classList.add('hardwall');
+            }
+            if (cellStatus === CELL_STATUS.UNWALKABLE) {
+                cell.classList.add('softwall');
+            }
             // イベントリスナーはmain.jsで設定するため、ここでは追加しない
             formationGrid.appendChild(cell);
         }

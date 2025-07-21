@@ -1,4 +1,4 @@
-import { placedCharacters, simulateFormation } from './data.js';
+import { placedCharacters, simulateFormation, mapData, CELL_STATUS } from './data.js';
 import { clearSkillHighlights, clearSelectedSkill } from './skill.js'; // clearSelectedSkillをインポート
 
 export let selectedCharacter = null;
@@ -24,6 +24,12 @@ export function setupCharacterButtons(characterButtons, skillButtons, resultText
 
 export function placeCharacter(cell, x, y, enableCollisionCheckbox, formationGrid, resultText) {
     const cellKey = `${x}-${y}`;
+
+    // 侵入不可セルへの配置を禁止
+    if (mapData[y][x] & CELL_STATUS.UNWALKABLE) {
+        resultText.textContent = `(${x},${y})は侵入不可セルです。キャラクターを配置できません。`;
+        return;
+    }
 
     if (placedCharacters[cellKey] && enableCollisionCheckbox.checked) {
         resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。衝突判定が有効です。`;

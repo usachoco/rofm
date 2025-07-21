@@ -332,3 +332,14 @@ footer {
 .grid-cell.skill-affected {
     box-shadow: inset 0 0 0 3px #dc3545; /* 内側に赤い枠線 */
 }
+
+/* 侵入不可セルのスタイル */
+.grid-cell.softwall {
+    background-color: #9e9e9e;
+    cursor: not-allowed; /* カーソルを禁止マークに */
+}
+/* 侵入不可かつ射線を遮るセルのスタイル */
+.grid-cell.hardwall {
+    background-color: #252525;
+    cursor: not-allowed; /* カーソルを禁止マークに */
+}

@@ -1,11 +1,14 @@
 import { createGrid, gridWidth, gridHeight } from './grid.js';
 import { setupCharacterButtons, selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
 import { setupSkillButtons, selectedSkillSize, handleCellMouseOver, handleCellMouseOut, activateSkill } from './skill.js';
-import { simulateFormation, importFromUrl, ALLY_CHARACTERS, ENEMY_CHARACTERS } from './data.js';
+import { simulateFormation, importFromUrl, ALLY_CHARACTERS, ENEMY_CHARACTERS, initializeMapData } from './data.js';
 import { setupUI } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const formationGrid = document.getElementById('formation-grid');
+
+    // マップデータを初期化
+    initializeMapData(gridWidth, gridHeight);
     const showGridLinesCheckbox = document.getElementById('show-grid-lines');
     const enableCollisionCheckbox = document.getElementById('enable-collision');
     const resetFormationButton = document.getElementById('reset-formation');
