@@ -1,7 +1,7 @@
 import { updateGridLines, createGrid } from './grid.js'; // 仮のインポート、後で調整
 import { clearAllCharacters } from './character.js'; // 仮のインポート、後で調整
 import { clearSkillHighlights } from './skill.js'; // 仮のインポート、後で調整
-import { exportData, importData, copyUrl } from './data.js'; // 仮のインポート、後で調整
+import { copyUrl } from './data.js'; // 仮のインポート、後で調整
 
 export function setupUI(elements) {
     const {

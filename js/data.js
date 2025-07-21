@@ -1,4 +1,4 @@
-import { clearAndPlaceCharacters } from './character.js'; // 仮のインポート、後で調整
+import { clearAndPlaceCharacters } from './character.js';
 
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
 
@@ -50,27 +50,9 @@ export function simulateFormation(resultText) {
     resultText.textContent = `${simulationOutput} (味方: ${allyCount}, 敵: ${enemyCount})`;
 }
 
-export function exportData(importDataInput, resultText) {
-    const data = JSON.stringify(placedCharacters);
-    importDataInput.value = data;
-    resultText.textContent = '配置データをテキストエリアにエクスポートしました。';
-}
-
-export function importData(importDataInput, formationGrid, resultText) {
-    try {
-        const dataString = importDataInput.value;
-        const importedCharacters = JSON.parse(dataString);
-        clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
-        resultText.textContent = '配置データをインポートしました。';
-    } catch (e) {
-        resultText.textContent = 'インポートデータが無効です。JSON形式を確認してください。';
-        console.error('Import error:', e);
-    }
-}
-
-export function copyUrl(resultText) {
-    const data = JSON.stringify(placedCharacters);
-    const encodedData = btoa(encodeURIComponent(data)); // Base64エンコード
+export async function copyUrl(resultText) {
+    const data = await compressData(placedCharacters);
+    const encodedData = uint8ToBase64(data); // Base64エンコード
     const url = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
     navigator.clipboard.writeText(url).then(() => {
         resultText.textContent = '現在の配置を含むURLをクリップボードにコピーしました。';
@@ -80,13 +62,13 @@ export function copyUrl(resultText) {
     });
 }
 
-export function importFromUrl(formationGrid, resultText) {
+export async function importFromUrl(formationGrid, resultText) {
     const params = new URLSearchParams(window.location.search);
     const encodedData = params.get('data');
     if (encodedData) {
         try {
-            const decodedData = decodeURIComponent(atob(encodedData)); // Base64デコード
-            const importedCharacters = JSON.parse(decodedData);
+            const decodedData = base64ToUint8(encodedData); // Base64デコード
+            const importedCharacters = await decompressData(decodedData);
             clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
             resultText.textContent = 'URLから配置データをインポートしました。';
         } catch (e) {
@@ -94,4 +76,50 @@ export function importFromUrl(formationGrid, resultText) {
             console.error('URL import error:', e);
         }
     }
+}
+
+// 圧縮関数
+async function compressData(data) {
+  const jsonString = JSON.stringify(data);
+  const textEncoder = new TextEncoder();
+  const encoded = textEncoder.encode(jsonString);
+
+  const cs = new CompressionStream('deflate'); // 'gzip' も選択可
+  const writer = cs.writable.getWriter();
+  writer.write(encoded);
+  writer.close();
+
+  const compressedBuffer = await new Response(cs.readable).arrayBuffer();
+  // ArrayBuffer を Uint8Array に変換して返す
+  return new Uint8Array(compressedBuffer);
+}
+
+// 展開関数
+async function decompressData(compressedData) {
+  const ds = new DecompressionStream('deflate'); // 'gzip' も選択可
+  const writer = ds.writable.getWriter();
+  writer.write(compressedData);
+  writer.close();
+
+  const decompressedBuffer = await new Response(ds.readable).arrayBuffer();
+  const textDecoder = new TextDecoder();
+  const jsonString = textDecoder.decode(decompressedBuffer);
+
+  return JSON.parse(jsonString);
+}
+
+// Base64エンコードヘルパー
+function uint8ToBase64(uint8Array) {
+  return btoa(String.fromCharCode.apply(null, uint8Array));
+}
+
+// Base64デコードヘルパー
+function base64ToUint8(base64String) {
+  const binaryString = atob(base64String);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
