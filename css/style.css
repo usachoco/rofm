@@ -51,6 +51,7 @@ main {
     gap: 20px;
 }
 
+/* サイドメニュー */
 .sidebar {
     background-color: #fff;
     padding: 20px;
@@ -60,8 +61,49 @@ main {
     max-width: 300px;
 }
 
+/* 開閉メニュー */
+.collapsible-header {
+    cursor: pointer;
+    position: relative;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+/* メニューが閉じている時 */
+.collapsible-header::after {
+    content: '+';
+    position: absolute;
+    right: 10px;
+    font-size: 1.2em;
+    color: #4CAF50;
+}
+
+/* メニューが開いている時 */
+.collapsible-header.expanded::after {
+    content: '-';
+}
+
+/* メニューが閉じている時のコンテンツ */
+.collapsible-content {
+    display: grid;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease-out;
+    visibility: hidden;
+   
+}
+
+/* メニューが開いている時のコンテンツ */
+.collapsible-header.expanded + .collapsible-content {
+    display: grid;
+    height: auto;
+    visibility: visible;
+   
+}
+
 .sidebar h2 {
     color: #4CAF50;
+    font-size: 1.2em;
     margin-top: 0;
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
@@ -82,7 +124,7 @@ main {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 0.7em; /* フォントサイズを調整 */
+    font-size: 0.6em; /* フォントサイズを調整 */
     transition: background-color 0.2s;
     text-align: center;
     white-space: nowrap; /* テキストの折り返しを防ぐ */

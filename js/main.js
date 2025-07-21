@@ -10,12 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const enableCollisionCheckbox = document.getElementById('enable-collision');
     const resetFormationButton = document.getElementById('reset-formation');
     const resultText = document.getElementById('result-text');
-
-    const exportDataButton = document.getElementById('export-data');
-    const importDataInput = document.getElementById('import-data-input');
-    const importDataButton = document.getElementById('import-data-button');
     const copyUrlButton = document.getElementById('copy-url-button');
     const skillButtons = document.querySelectorAll('.skill-btn');
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 
     // キャラクター選択ボタンを動的に生成
     const characterSelectionDiv = document.querySelector('.character-selection');
@@ -48,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
         characterButtons, // 更新されたcharacterButtonsを渡す
         resultText,
         copyUrlButton,
-        skillButtons
+        skillButtons,
+        collapsibleHeaders
     });
 
     // キャラクターボタンのセットアップ

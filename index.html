@@ -16,26 +16,23 @@
 
     <main>
         <aside class="sidebar">
-            <h2>キャラクター選択</h2>
-            <div class="character-selection">
+            <h2 class="collapsible-header">キャラクター選択</h2>
+            <div class="collapsible-content character-selection">
             </div>
-            <h2>敵キャラクター選択</h2>
-            <div class="enemy-selection">
+            <h2 class="collapsible-header">敵キャラクター選択</h2>
+            <div class="collapsible-content enemy-selection">
             </div>
-                 <h2>設定</h2>
-            <div class="settings">
+            <h2 class="collapsible-header">設定</h2>
+            <div class="collapsible-content settings">
                 <label><input type="checkbox" id="show-grid-lines" checked> グリッド線を表示</label>
                 <label><input type="checkbox" id="enable-collision"> 衝突判定を有効にする</label>
             </div>
-            <h2>スキルシミュレーション</h2>
-            <div class="skill-selection">
+            <h2 class="collapsible-header">スキルシミュレーション</h2>
+            <div class="collapsible-content skill-selection">
                 <button class="skill-btn" data-skill-size="3">3x3スキル</button>
                 <button class="skill-btn" data-skill-size="5">5x5スキル</button>
             </div>
-            <h2>データ共有</h2>
-            <div class="data-sharing">
-                 </div>
-                 <button id="reset-formation">配置をリセット</button>
+            <button id="reset-formation">配置をリセット</button>
         </aside>
 
         <section class="formation-area">
@@ -50,7 +47,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 ROFM Project</p>
+        <span>&copy; 2025 ROFM Project</span>
     </footer>
 
     <script type="module" src="js/main.js"></script>

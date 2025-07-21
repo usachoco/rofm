@@ -11,11 +11,9 @@ export function setupUI(elements) {
         resetFormationButton,
         characterButtons,
         resultText,
-        exportDataButton,
-        importDataInput,
-        importDataButton,
         copyUrlButton,
-        skillButtons
+        skillButtons,
+        collapsibleHeaders
     } = elements;
 
     // グリッド線表示チェックボックスのイベントリスナー
@@ -31,4 +29,14 @@ export function setupUI(elements) {
 
     // URLをコピー
     copyUrlButton.addEventListener('click', () => copyUrl(resultText));
+
+    // サイドメニューの開閉イベントリスナー
+    if (collapsibleHeaders && collapsibleHeaders.length > 0) {
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                this.classList.toggle('expanded');
+                const content = this.nextElementSibling;
+            });
+        });
+    }
 }
