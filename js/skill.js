@@ -1,10 +1,16 @@
 import { placedCharacters, mapData, CELL_STATUS } from './data.js';
 import { gridWidth, gridHeight } from './grid.js';
-import { clearSelectedCharacter } from './character.js'; // clearSelectedCharacterをインポート
+import { clearSelectedCharacter } from './character.js';
 
 export let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
 
-export function setupSkillButtons(skillButtons, characterButtons, resultText, formationGrid) {
+/**
+ * スキル選択ボタンにOnClickイベントハンドラを設定する
+ * @param {*} skillButtons 
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+export function setupSkillButtons(skillButtons, resultText, formationGrid) {
     skillButtons.forEach(button => {
         button.addEventListener('click', () => {
             clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
@@ -12,22 +18,27 @@ export function setupSkillButtons(skillButtons, characterButtons, resultText, fo
             skillButtons.forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
             selectedSkillSize = parseInt(button.dataset.skillSize);
-
             // キャラクター選択を解除
             clearSelectedCharacter(); // clearSelectedCharacter関数を呼び出す
-
             resultText.textContent = `${selectedSkillSize}x${selectedSkillSize}スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
         });
     });
 }
 
+/**
+ * マウスがマップ上に重なったときに呼び出されるイベントハンドラ
+ * - 新しくスキル設置場所を検討する場合
+ *   - 設置済みのスキル影響範囲を削除する
+ *   - 現在のセルを中心とした仮のスキル影響範囲を描画する
+ * @param {*} event 
+ * @param {*} formationGrid 
+ */
 export function handleCellMouseOver(event, formationGrid) {
     if (selectedSkillSize) {
         clearSkillHighlights(formationGrid); // 既存のハイライトをクリア
         const cell = event.target;
         const centerX = parseInt(cell.dataset.x);
         const centerY = parseInt(cell.dataset.y);
-
         const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkillSize);
         affectedCells.forEach(coord => {
             const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
@@ -38,14 +49,25 @@ export function handleCellMouseOver(event, formationGrid) {
     }
 }
 
+/**
+ * マウスがマップ外に出たときに呼び出されるイベントハンドラ
+ * - 仮のスキル影響範囲を削除する. これがないとマップ端に描画が残ってしまう.
+ * @param {*} formationGrid 
+ */
 export function handleCellMouseOut(formationGrid) {
-    // マウスアウト時は、スキルが選択されている場合のみハイライトをクリア
-    // スキル発動後のハイライトは残すため、ここではクリアしない
+    // スキル設置セルを検討している状態のとき
     if (selectedSkillSize) {
-        clearSkillHighlights(formationGrid);
+        clearSkillHighlights(formationGrid);    // 仮のスキル影響範囲を消去する
     }
 }
 
+/**
+ * マップ上のスキル関連エフェクト（ハイライト）を削除する
+ * - スキル設置セル
+ * - スキル効果範囲セル
+ * - スキルの影響を受けているキャラクターセル
+ * @param {*} formationGrid 
+ */
 export function clearSkillHighlights(formationGrid) {
     formationGrid.querySelectorAll('.grid-cell.skill-highlight').forEach(cell => {
         cell.classList.remove('skill-highlight');
@@ -58,13 +80,19 @@ export function clearSkillHighlights(formationGrid) {
     });
 }
 
+/**
+ * 設置位置が確定したスキルの影響範囲を可視化する
+ * @param {*} cell 設置先セル
+ * @param {*} x 設置先セルのx座標 // TODO いらないのでは
+ * @param {*} y 設置先セルのy座標 // TODO いらないのでは
+ * @param {*} formationGrid
+ * @param {*} resultText 
+ */
 export function activateSkill(cell, x, y, formationGrid, resultText) {
     clearSkillHighlights(formationGrid); // スキル発動前に既存のハイライトをクリア
     cell.classList.add('skill-target'); // ターゲットセルをハイライト
-
     const affectedCells = getSkillAffectedCells(x, y, selectedSkillSize);
     let affectedCharacters = [];
-
     affectedCells.forEach(coord => {
         const key = `${coord.x}-${coord.y}`;
         const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
@@ -72,36 +100,43 @@ export function activateSkill(cell, x, y, formationGrid, resultText) {
             affectedCellElement.classList.add('skill-affected'); // スキル影響範囲内のすべてのセルをハイライト
         }
         if (placedCharacters[key]) {
-            affectedCharacters.push(placedCharacters[key]);
+            affectedCharacters.push(placedCharacters[key]); // 影響を受けるキャラクターをピックアップ
         }
     });
-
     if (affectedCharacters.length > 0) {
         const charNames = affectedCharacters.map(char => `${char.name}(${char.type === 'ally' ? '味方' : '敵'})`).join(', ');
         resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
     } else {
         resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
     }
-
-    // スキル発動後、選択状態を解除
-    document.querySelectorAll('.skill-btn').forEach(btn => btn.classList.remove('selected'));
-    selectedSkillSize = null;
+    clearSelectedSkill();
 }
 
+/**
+ * 下記の「スキル設置セルを検討している状態」を解除する
+ * - マウスホバーに仮のスキル影響範囲が追随する
+ * - クリックした位置にスキル影響範囲が描画される
+ */
 export function clearSelectedSkill() {
     document.querySelectorAll('.skill-btn').forEach(btn => btn.classList.remove('selected'));
     selectedSkillSize = null;
 }
 
+/**
+ * 指定されたセルを中心とした四角形の効果範囲セル座標の配列を返す.
+ * この関数では障害物の存在が考慮されない.
+ * @param {*} centerX 
+ * @param {*} centerY 
+ * @param {*} skillSize 
+ * @returns {Array} セル座標 {x: x0, y: y0} の配列
+ */
 export function getSkillAffectedCells(centerX, centerY, skillSize) {
     const cells = [];
     const offset = Math.floor(skillSize / 2);
-
     for (let i = -offset; i <= offset; i++) {
         for (let j = -offset; j <= offset; j++) {
             const targetX = centerX + j;
             const targetY = centerY + i;
-
             // グリッド範囲内にあるかチェック
             if (targetX >= 0 && targetX < gridWidth && targetY >= 0 && targetY < gridHeight) {
                 cells.push({ x: targetX, y: targetY });
@@ -111,7 +146,15 @@ export function getSkillAffectedCells(centerX, centerY, skillSize) {
     return cells;
 }
 
-// プレゼンハムのアルゴリズムを実装
+/**
+ * 起点と終点を結ぶセル座標の配列を返す.
+ * この関数では障害物の存在が考慮される.
+ * @param {*} x0 起点
+ * @param {*} y0 起点
+ * @param {*} x1 終点
+ * @param {*} y1 終点
+ * @returns {Array} セル座標 {x: x0, y: y0} の配列
+ */
 export function getLineOfSightCells(x0, y0, x1, y1) {
     const cells = [];
     let dx = Math.abs(x1 - x0);
@@ -119,13 +162,11 @@ export function getLineOfSightCells(x0, y0, x1, y1) {
     let sx = (x0 < x1) ? 1 : -1;
     let sy = (y0 < y1) ? 1 : -1;
     let err = dx - dy;
-
     while (true) {
         // 現在のセルがグリッド範囲内にあるかチェック
         if (x0 < 0 || x0 >= gridWidth || y0 < 0 || y0 >= gridHeight) {
             break; // 範囲外に出たら終了
         }
-
         // 射線を遮るセル（OBSTACLE）があるかチェック
         // ただし、始点セル自体はチェックしない（始点に障害物があっても射線はそこから始まるため）
         if (!((x0 === x1 && y0 === y1) || (x0 === x0 && y0 === y0))) { // 終点または始点でない場合
@@ -136,9 +177,8 @@ export function getLineOfSightCells(x0, y0, x1, y1) {
                 break;
             }
         }
-        
         cells.push({ x: x0, y: y0 });
-
+        // プレゼンハムのアルゴリズム
         if (x0 === x1 && y0 === y1) break;
         let e2 = 2 * err;
         if (e2 > -dy) {
@@ -153,7 +193,14 @@ export function getLineOfSightCells(x0, y0, x1, y1) {
     return cells;
 }
 
-// 指定されたセルからの射程範囲内のセルを円形に取得
+/**
+ * 指定されたセルを中心とした円形の射程範囲セル座標の配列を返す.
+ * この関数では障害物の存在が考慮される.
+ * @param {*} centerX 中心
+ * @param {*} centerY 中心
+ * @param {*} range 射程距離
+ * @returns {Array} セル座標 {x: x0, y: y0} の配列
+ */
 export function getRangeAffectedCells(centerX, centerY, range) {
     const cells = new Set(); // 重複を避けるためにSetを使用
     for (let y = centerY - range; y <= centerY + range; y++) {
@@ -170,8 +217,9 @@ export function getRangeAffectedCells(centerX, centerY, range) {
                     for (let i = 0; i < lineOfSight.length - 1; i++) {
                         const losCell = lineOfSight[i];
                         // 始点セルはチェックしない
-                        if (losCell.x === centerX && losCell.y === centerY) continue;
-                        
+                        if (losCell.x === centerX && losCell.y === centerY) {
+                            continue;
+                        }
                         const cellStatus = mapData[losCell.y][losCell.x];
                         if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
                             hasObstacle = true;
@@ -188,7 +236,7 @@ export function getRangeAffectedCells(centerX, centerY, range) {
                             }
                         }
                     }
-
+                    // 経路上に障害物がないセルは有効射程範囲として追加する
                     if (!hasObstacle) {
                         cells.add(JSON.stringify({ x, y }));
                     }

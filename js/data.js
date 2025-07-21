@@ -1,24 +1,14 @@
 import { clearAndPlaceCharacters } from './character.js';
 import { MAP_V3_ER } from './mapdata/map01.js';
-// gridWidth, gridHeight は main.js で渡されるか、createMapData内で取得する
 
-// セルのステータス定義
+/** セルのステータス定義  */
 export const CELL_STATUS = {
     NONE: 0, // 制限なしセル
     UNWALKABLE: 1, // 侵入不可セル
     OBSTACLE: 2 // 射線を遮るセル
 };
 
-// マップデータを保持する変数 (初期化は後で行う)
-export let mapData = [];
-
-// マップデータを初期化する関数
-export function initializeMapData(width, height) {
-    mapData = MAP_V3_ER; // グローバルなmapDataを更新
-}
-
-export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
-
+/** キャラクターの定義 */
 export const ALLY_CHARACTERS = [
     { id: 'DK', name: 'ドラゴンナイト' },
     { id: 'IG', name: 'インペリアルガード' },
@@ -42,15 +32,34 @@ export const ALLY_CHARACTERS = [
     { id: 'SD', name: 'スピリットハンドラー' }
 ];
 
+/** 敵キャラクターの定義 */ 
 export const ENEMY_CHARACTERS = [
     { id: 'player', name: '対戦相手' },
 ];
 
+/** マップデータを保持する変数  */
+export let mapData = [];
+
+/** キャラクターシンボルの配置情報が格納される配列 */
+export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
+
+/**
+ * マップデータを初期化する
+ * @param {*} width 
+ * @param {*} height 
+ */
+export function initializeMapData(width, height) {
+    mapData = MAP_V3_ER; // グローバルなmapDataを更新
+}
+
+/**
+ * マップ上に配置されているシンボルの情報を画面表示するための文字列を生成する
+ * @param {*} resultText 
+ */
 export function simulateFormation(resultText) {
     let allyCount = 0;
     let enemyCount = 0;
     let simulationOutput = '現在の配置: ';
-
     if (Object.keys(placedCharacters).length === 0) {
         simulationOutput += 'キャラクターは配置されていません。';
     } else {
@@ -67,6 +76,10 @@ export function simulateFormation(resultText) {
     resultText.textContent = `${simulationOutput} (味方: ${allyCount}, 敵: ${enemyCount})`;
 }
 
+/**
+ * マップ上に配置されているシンボルの情報をURL文字列に書き出してクリップボードにコピーする
+ * @param {*} resultText 
+ */
 export async function copyUrl(resultText) {
     const data = await compressData(placedCharacters);
     const encodedData = uint8ToBase64(data); // Base64エンコード
@@ -79,6 +92,11 @@ export async function copyUrl(resultText) {
     });
 }
 
+/**
+ * 与えられたURL文字列からデータを読み取ってマップ上にシンボルを配置する
+ * @param {*} formationGrid 
+ * @param {*} resultText 
+ */
 export async function importFromUrl(formationGrid, resultText) {
     const params = new URLSearchParams(window.location.search);
     const encodedData = params.get('data');
@@ -95,42 +113,54 @@ export async function importFromUrl(formationGrid, resultText) {
     }
 }
 
-// 圧縮関数
+/**
+ * 与えられたデータをdeflate圧縮してUint8配列にして返す
+ * @param {Object} data 
+ * @returns {Uint8Array}
+ */
 async function compressData(data) {
   const jsonString = JSON.stringify(data);
   const textEncoder = new TextEncoder();
   const encoded = textEncoder.encode(jsonString);
-
   const cs = new CompressionStream('deflate'); // 'gzip' も選択可
   const writer = cs.writable.getWriter();
   writer.write(encoded);
   writer.close();
-
   const compressedBuffer = await new Response(cs.readable).arrayBuffer();
   // ArrayBuffer を Uint8Array に変換して返す
   return new Uint8Array(compressedBuffer);
 }
 
-// 展開関数
+/**
+ * 与えられたデータをinflate展開してObjectにして返す
+ * @param {Uint8Array} compressedData 
+ * @returns {Object}
+ */
 async function decompressData(compressedData) {
   const ds = new DecompressionStream('deflate'); // 'gzip' も選択可
   const writer = ds.writable.getWriter();
   writer.write(compressedData);
   writer.close();
-
   const decompressedBuffer = await new Response(ds.readable).arrayBuffer();
   const textDecoder = new TextDecoder();
   const jsonString = textDecoder.decode(decompressedBuffer);
-
   return JSON.parse(jsonString);
 }
 
-// Base64エンコードヘルパー
+/**
+ * Uint8ArrayをエンコードしたBase64文字列を返す
+ * @param {Uint8Array} uint8Array 
+ * @returns {string}
+ */
 function uint8ToBase64(uint8Array) {
   return btoa(String.fromCharCode.apply(null, uint8Array));
 }
 
-// Base64デコードヘルパー
+/**
+ * Base64文字列をデコードしたUint8Arrayを返す
+ * @param {string} base64String 
+ * @returns {Uint8Array}
+ */
 function base64ToUint8(base64String) {
   const binaryString = atob(base64String);
   const len = binaryString.length;

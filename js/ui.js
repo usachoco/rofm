@@ -1,8 +1,12 @@
-import { updateGridLines, createGrid } from './grid.js'; // 仮のインポート、後で調整
-import { clearAllCharacters } from './character.js'; // 仮のインポート、後で調整
-import { clearSkillHighlights } from './skill.js'; // 仮のインポート、後で調整
-import { copyUrl } from './data.js'; // 仮のインポート、後で調整
+import { updateGridLines, createGrid } from './grid.js';
+import { clearAllCharacters } from './character.js';
+import { clearSkillHighlights } from './skill.js';
+import { copyUrl } from './data.js';
 
+/**
+ * 分割代入されたHTMLエレメントにイベントリスナーをセットする
+ * @param {Object} elements { }でまとめられたHTMLエレメント
+ */
 export function setupUI(elements) {
     const {
         formationGrid,
@@ -14,13 +18,15 @@ export function setupUI(elements) {
         copyUrlButton,
         skillButtons,
         collapsibleHeaders,
-        resetSelectionAndMode // 新しい関数を受け取る
+        resetSelectionAndMode,
     } = elements;
 
     // グリッド線表示チェックボックスのイベントリスナー
-    showGridLinesCheckbox.addEventListener('change', () => updateGridLines(formationGrid, showGridLinesCheckbox));
+    showGridLinesCheckbox.addEventListener('change', () => 
+        updateGridLines(formationGrid, showGridLinesCheckbox)
+    );
 
-    // 配置をリセットボタンのイベントリスナー
+    // 配置リセットボタンのイベントリスナー
     resetFormationButton.addEventListener('click', () => {
         clearAllCharacters(formationGrid); // 全ての配置をクリア
         clearSkillHighlights(formationGrid); // リセット時にもスキルハイライトをクリア
@@ -29,8 +35,10 @@ export function setupUI(elements) {
         resultText.textContent = '配置がリセットされました。';
     });
 
-    // URLをコピー
-    copyUrlButton.addEventListener('click', () => copyUrl(resultText));
+    // URLコピーボタンのイベントリスナー
+    copyUrlButton.addEventListener('click', () => 
+        copyUrl(resultText)
+    );
 
     // サイドメニューの開閉イベントリスナー
     if (collapsibleHeaders && collapsibleHeaders.length > 0) {

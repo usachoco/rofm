@@ -1,10 +1,17 @@
 import { placedCharacters, simulateFormation, mapData, CELL_STATUS } from './data.js';
-import { clearSkillHighlights, clearSelectedSkill } from './skill.js'; // clearSelectedSkillをインポート
+import { clearSkillHighlights, clearSelectedSkill } from './skill.js';
 
 export let selectedCharacter = null;
 export let selectedCharacterType = null; // 'ally' or 'enemy'
 
-export function setupCharacterButtons(characterButtons, skillButtons, resultText, formationGrid) {
+/**
+ * キャラクター設定ボタンにイベントリスナーを設定する
+ * @param {*} characterButtons 
+ * @param {*} skillButtons 
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+export function setupCharacterButtons(characterButtons, resultText, formationGrid) {
     characterButtons.forEach(button => {
         button.addEventListener('click', () => {
             clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
@@ -13,29 +20,33 @@ export function setupCharacterButtons(characterButtons, skillButtons, resultText
             button.classList.add('selected');
             selectedCharacter = button.dataset.char;
             selectedCharacterType = button.classList.contains('enemy-btn') ? 'enemy' : 'ally';
-
             // スキル選択を解除
             clearSelectedSkill(); // clearSelectedSkill関数を呼び出す
-            
             resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) が選択されました。グリッドをクリックして配置してください。`;
         });
     });
 }
 
-export function placeCharacter(cell, x, y, enableCollisionCheckbox, formationGrid, resultText) {
+/**
+ * 現在選択中のキャラクターを指定されたセルに設置する
+ * @param {*} cell 
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} enableCollisionCheckbox 
+ * @param {*} resultText 
+ * @returns 
+ */
+export function placeCharacter(cell, x, y, enableCollisionCheckbox, resultText) {
     const cellKey = `${x}-${y}`;
-
     // 侵入不可セルへの配置を禁止
     if (mapData[y][x] & CELL_STATUS.UNWALKABLE) {
         resultText.textContent = `(${x},${y})は侵入不可セルです。キャラクターを配置できません。`;
         return;
     }
-
     if (placedCharacters[cellKey] && enableCollisionCheckbox.checked) {
         resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。衝突判定が有効です。`;
         return;
     }
-
     if (cell.classList.contains('has-character')) {
         const existingChar = cell.querySelector('.character-icon');
         if (existingChar) {
@@ -47,7 +58,6 @@ export function placeCharacter(cell, x, y, enableCollisionCheckbox, formationGri
         }
         delete placedCharacters[cellKey];
     }
-
     const charIcon = document.createElement('span');
     charIcon.classList.add('character-icon');
     charIcon.textContent = selectedCharacter.substring(0, 2).toUpperCase();
@@ -59,6 +69,10 @@ export function placeCharacter(cell, x, y, enableCollisionCheckbox, formationGri
     simulateFormation(resultText);
 }
 
+/**
+ * マップ上に配置されている全てのキャラクター情報を削除する
+ * @param {*} formationGrid 
+ */
 export function clearAllCharacters(formationGrid) {
     formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
         cell.classList.remove('has-character');
@@ -81,15 +95,23 @@ export function clearAllCharacters(formationGrid) {
     document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
 }
 
+/**
+ * キャラクターボタンの選択状態を解除する
+ */
 export function clearSelectedCharacter() {
     document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
     selectedCharacter = null;
     selectedCharacterType = null;
 }
 
+/**
+ * 渡されたキャラクタ配置座標に基づいてマップ上にキャラクタシンボルを描画する.
+ * @param {*} charactersToPlace 
+ * @param {*} formationGrid
+ * @param {*} resultText 
+ */
 export function clearAndPlaceCharacters(charactersToPlace, formationGrid, resultText) {
     clearAllCharacters(formationGrid); // 現在の配置を全てクリア
-
     // 新しいキャラクターを配置
     for (const key in charactersToPlace) {
         const char = charactersToPlace[key];

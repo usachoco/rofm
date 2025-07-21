@@ -1,8 +1,17 @@
 import { mapData, CELL_STATUS } from './data.js';
 
+/** マップの幅 */
 export const gridWidth = 40; // 48
+/** マップの高さ */
 export const gridHeight = 40; // 27
 
+/**
+ * マップデータに基づいてマップ画面を初期描画する
+ * @param {*} formationGrid 
+ * @param {*} showGridLinesCheckbox 
+ * @param {*} width 
+ * @param {*} height 
+ */
 export function createGrid(formationGrid, showGridLinesCheckbox, width = gridWidth, height = gridHeight) {
     formationGrid.innerHTML = '';
     // グリッドのCSS変数を設定
@@ -30,6 +39,11 @@ export function createGrid(formationGrid, showGridLinesCheckbox, width = gridWid
     updateGridLines(formationGrid, showGridLinesCheckbox);
 }
 
+/**
+ * マップ画面のグリッドライン表示・非表示を切り替える
+ * @param {*} formationGrid 
+ * @param {*} showGridLinesCheckbox 
+ */
 export function updateGridLines(formationGrid, showGridLinesCheckbox) {
     if (showGridLinesCheckbox.checked) {
         formationGrid.querySelectorAll('.grid-cell').forEach(cell => {

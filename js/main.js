@@ -1,6 +1,6 @@
 import { createGrid, gridWidth, gridHeight } from './grid.js';
-import { setupCharacterButtons, selectedCharacter, selectedCharacterType, placeCharacter, clearSelectedCharacter } from './character.js'; // clearSelectedCharacterをインポート
-import { setupSkillButtons, selectedSkillSize, handleCellMouseOver, handleCellMouseOut, activateSkill, getLineOfSightCells, getRangeAffectedCells, clearSkillHighlights, clearSelectedSkill } from './skill.js'; // clearSelectedSkillをインポート
+import { setupCharacterButtons, selectedCharacter, selectedCharacterType, placeCharacter, clearSelectedCharacter } from './character.js';
+import { setupSkillButtons, selectedSkillSize, handleCellMouseOver, handleCellMouseOut, activateSkill, getLineOfSightCells, getRangeAffectedCells, clearSkillHighlights, clearSelectedSkill } from './skill.js';
 import { simulateFormation, importFromUrl, ALLY_CHARACTERS, ENEMY_CHARACTERS, initializeMapData, placedCharacters } from './data.js';
 import { setupUI } from './ui.js';
 
@@ -9,10 +9,9 @@ let currentRange = 9; // デフォルトの射程距離
 let fixedLineOfSightTarget = null; // クリックで固定された射線可視化のターゲットセル
 
 document.addEventListener('DOMContentLoaded', () => {
-    const formationGrid = document.getElementById('formation-grid');
-
     // マップデータを初期化
     initializeMapData(gridWidth, gridHeight);
+    const formationGrid = document.getElementById('formation-grid');
     const showGridLinesCheckbox = document.getElementById('show-grid-lines');
     const enableCollisionCheckbox = document.getElementById('enable-collision');
     const resetFormationButton = document.getElementById('reset-formation');
@@ -33,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearLineOfSightHighlights(formationGrid); // 射線ハイライトもクリア
         setupGridEventListeners(); // グリッドを再生成した後にイベントリスナーを再設定
     }
-
     // キャラクター選択ボタンを動的に生成
     const characterSelectionDiv = document.querySelector('.character-selection');
     ALLY_CHARACTERS.forEach(char => {
@@ -43,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.textContent = char.name;
         characterSelectionDiv.appendChild(button);
     });
-
+    // エネミー選択ボタンを動的に生成
     const enemySelectionDiv = document.querySelector('.enemy-selection');
     ENEMY_CHARACTERS.forEach(char => {
         const button = document.createElement('button');
@@ -52,31 +50,30 @@ document.addEventListener('DOMContentLoaded', () => {
         button.textContent = char.name;
         enemySelectionDiv.appendChild(button);
     });
-
     // 動的に生成されたボタンを含むNodeListを再取得
     const characterButtons = document.querySelectorAll('.char-btn');
 
     // UI要素をまとめて渡す
-        setupUI({
+    setupUI({
         formationGrid,
         showGridLinesCheckbox,
         enableCollisionCheckbox,
         resetFormationButton,
-        characterButtons, // 更新されたcharacterButtonsを渡す
+        characterButtons,
         resultText,
         copyUrlButton,
         skillButtons,
         collapsibleHeaders,
-        rangeInput, // 新しいUI要素を追加
-        toggleLineOfSightModeButton, // 新しいUI要素を追加
-        resetSelectionAndMode // 新しい関数を追加
+        rangeInput,
+        toggleLineOfSightModeButton,
+        resetSelectionAndMode // TODO これだけUIじゃなくてfunctionなので別の方法にすべき
     });
 
     // キャラクターボタンのセットアップ
-    setupCharacterButtons(characterButtons, skillButtons, resultText, formationGrid);
+    setupCharacterButtons(characterButtons, resultText, formationGrid);
 
     // スキルボタンのセットアップ
-    setupSkillButtons(skillButtons, characterButtons, resultText, formationGrid);
+    setupSkillButtons(skillButtons, resultText, formationGrid);
 
     // グリッドの生成
     createGrid(formationGrid, showGridLinesCheckbox, gridWidth, gridHeight);
@@ -89,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const y = parseInt(event.target.dataset.y);
 
                 if (selectedCharacter && selectedCharacterType) {
-                    placeCharacter(event.target, x, y, enableCollisionCheckbox, formationGrid, resultText);
+                    placeCharacter(event.target, x, y, enableCollisionCheckbox, resultText);
                 } else if (selectedSkillSize) {
                     activateSkill(event.target, x, y, formationGrid, resultText);
                     clearLineOfSightHighlights(formationGrid); // スキル発動後に射線ハイライトをクリア
