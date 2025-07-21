@@ -1,4 +1,5 @@
 import { clearAndPlaceCharacters } from './character.js';
+import { MAP_V3_ER } from './mapdata/map01.js';
 // gridWidth, gridHeight は main.js で渡されるか、createMapData内で取得する
 
 // セルのステータス定義
@@ -13,14 +14,7 @@ export let mapData = [];
 
 // マップデータを初期化する関数
 export function initializeMapData(width, height) {
-    const map = [];
-    for (let i = 0; i < height; i++) {
-        map.push(new Array(width).fill(CELL_STATUS.NONE));
-    }
-    // 例: 特定のセルを侵入不可に設定 (テスト用)
-    map[5][5] = CELL_STATUS.UNWALKABLE;
-    map[5][6] = CELL_STATUS.UNWALKABLE | CELL_STATUS.OBSTACLE; // 侵入不可かつ射線を遮るセル
-    mapData = map; // グローバルなmapDataを更新
+    mapData = MAP_V3_ER; // グローバルなmapDataを更新
 }
 
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }

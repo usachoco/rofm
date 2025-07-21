@@ -1,7 +1,7 @@
 import { mapData, CELL_STATUS } from './data.js';
 
-export const gridWidth = 48;
-export const gridHeight = 27;
+export const gridWidth = 40; // 48
+export const gridHeight = 40; // 27
 
 export function createGrid(formationGrid, showGridLinesCheckbox, width = gridWidth, height = gridHeight) {
     formationGrid.innerHTML = '';
