@@ -1,4 +1,4 @@
-import { placedCharacters } from './data.js';
+import { placedCharacters, mapData, CELL_STATUS } from './data.js';
 import { gridWidth, gridHeight } from './grid.js';
 import { clearSelectedCharacter } from './character.js'; // clearSelectedCharacterをインポート
 
@@ -55,13 +55,6 @@ export function clearSkillHighlights(formationGrid) {
     });
     formationGrid.querySelectorAll('.grid-cell.skill-affected').forEach(cell => {
         cell.classList.remove('skill-affected');
-    });
-    // 射線可視化モードのハイライトもクリア
-    formationGrid.querySelectorAll('.grid-cell.line-of-sight-highlight').forEach(cell => {
-        cell.classList.remove('line-of-sight-highlight');
-    });
-    formationGrid.querySelectorAll('.grid-cell.range-highlight').forEach(cell => {
-        cell.classList.remove('range-highlight');
     });
 }
 
@@ -128,6 +121,22 @@ export function getLineOfSightCells(x0, y0, x1, y1) {
     let err = dx - dy;
 
     while (true) {
+        // 現在のセルがグリッド範囲内にあるかチェック
+        if (x0 < 0 || x0 >= gridWidth || y0 < 0 || y0 >= gridHeight) {
+            break; // 範囲外に出たら終了
+        }
+
+        // 射線を遮るセル（OBSTACLE）があるかチェック
+        // ただし、始点セル自体はチェックしない（始点に障害物があっても射線はそこから始まるため）
+        if (!((x0 === x1 && y0 === y1) || (x0 === x0 && y0 === y0))) { // 終点または始点でない場合
+            const cellStatus = mapData[y0][x0];
+            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                // 射線を遮るセルが見つかった場合、そのセルまでを射線として返し、終了
+                cells.push({ x: x0, y: y0 }); // 障害物セル自体も射線に含まれる
+                break;
+            }
+        }
+        
         cells.push({ x: x0, y: y0 });
 
         if (x0 === x1 && y0 === y1) break;
@@ -154,7 +163,35 @@ export function getRangeAffectedCells(centerX, centerY, range) {
                 // 中心からの距離を計算し、円形に含めるか判断
                 const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
                 if (distance <= range) {
-                    cells.add(JSON.stringify({ x, y }));
+                    // 射線上に障害物がないかチェック
+                    const lineOfSight = getLineOfSightCells(centerX, centerY, x, y);
+                    let hasObstacle = false;
+                    // 始点と終点を除く射線上のセルをチェック
+                    for (let i = 0; i < lineOfSight.length - 1; i++) {
+                        const losCell = lineOfSight[i];
+                        // 始点セルはチェックしない
+                        if (losCell.x === centerX && losCell.y === centerY) continue;
+                        
+                        const cellStatus = mapData[losCell.y][losCell.x];
+                        if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                            hasObstacle = true;
+                            break;
+                        }
+                    }
+                    // 終点セルが障害物の場合も射線は通らないと判断
+                    if (lineOfSight.length > 0) {
+                        const lastCell = lineOfSight[lineOfSight.length - 1];
+                        if (lastCell.x === x && lastCell.y === y) {
+                            const cellStatus = mapData[lastCell.y][lastCell.x];
+                            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                                hasObstacle = true;
+                            }
+                        }
+                    }
+
+                    if (!hasObstacle) {
+                        cells.add(JSON.stringify({ x, y }));
+                    }
                 }
             }
         }

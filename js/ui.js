@@ -13,7 +13,8 @@ export function setupUI(elements) {
         resultText,
         copyUrlButton,
         skillButtons,
-        collapsibleHeaders
+        collapsibleHeaders,
+        resetSelectionAndMode // 新しい関数を受け取る
     } = elements;
 
     // グリッド線表示チェックボックスのイベントリスナー
@@ -24,6 +25,7 @@ export function setupUI(elements) {
         clearAllCharacters(formationGrid); // 全ての配置をクリア
         clearSkillHighlights(formationGrid); // リセット時にもスキルハイライトをクリア
         createGrid(formationGrid, showGridLinesCheckbox); // グリッドを再生成して初期状態に戻す
+        resetSelectionAndMode(); // 選択状態とモードをリセット
         resultText.textContent = '配置がリセットされました。';
     });
 
