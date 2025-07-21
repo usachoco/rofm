@@ -56,6 +56,13 @@ export function clearSkillHighlights(formationGrid) {
     formationGrid.querySelectorAll('.grid-cell.skill-affected').forEach(cell => {
         cell.classList.remove('skill-affected');
     });
+    // 射線可視化モードのハイライトもクリア
+    formationGrid.querySelectorAll('.grid-cell.line-of-sight-highlight').forEach(cell => {
+        cell.classList.remove('line-of-sight-highlight');
+    });
+    formationGrid.querySelectorAll('.grid-cell.range-highlight').forEach(cell => {
+        cell.classList.remove('range-highlight');
+    });
 }
 
 export function activateSkill(cell, x, y, formationGrid, resultText) {
@@ -109,4 +116,48 @@ export function getSkillAffectedCells(centerX, centerY, skillSize) {
         }
     }
     return cells;
+}
+
+// プレゼンハムのアルゴリズムを実装
+export function getLineOfSightCells(x0, y0, x1, y1) {
+    const cells = [];
+    let dx = Math.abs(x1 - x0);
+    let dy = Math.abs(y1 - y0);
+    let sx = (x0 < x1) ? 1 : -1;
+    let sy = (y0 < y1) ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+        cells.push({ x: x0, y: y0 });
+
+        if (x0 === x1 && y0 === y1) break;
+        let e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
+    }
+    return cells;
+}
+
+// 指定されたセルからの射程範囲内のセルを円形に取得
+export function getRangeAffectedCells(centerX, centerY, range) {
+    const cells = new Set(); // 重複を避けるためにSetを使用
+    for (let y = centerY - range; y <= centerY + range; y++) {
+        for (let x = centerX - range; x <= centerX + range; x++) {
+            // グリッド範囲内にあるかチェック
+            if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
+                // 中心からの距離を計算し、円形に含めるか判断
+                const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                if (distance <= range) {
+                    cells.add(JSON.stringify({ x, y }));
+                }
+            }
+        }
+    }
+    return Array.from(cells).map(s => JSON.parse(s));
 }

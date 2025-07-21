@@ -343,3 +343,47 @@ footer {
     background-color: #252525;
     cursor: not-allowed; /* カーソルを禁止マークに */
 }
+
+/* 射線可視化モードのボタン */
+#toggle-line-of-sight-mode {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #ffc107; /* 黄色 */
+    color: #333;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+
+#toggle-line-of-sight-mode:hover {
+    background-color: #e0a800;
+}
+
+#toggle-line-of-sight-mode.selected {
+    background-color: #fd7e14; /* オレンジ */
+    color: white;
+}
+
+/* 射程距離入力フィールド */
+#range-input {
+    width: calc(100% - 22px); /* パディングとボーダーを考慮 */
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* パディングとボーダーを幅に含める */
+}
+
+/* 射線ハイライト */
+.grid-cell.line-of-sight-highlight {
+    background-color: rgba(0, 123, 255, 0.3); /* 半透明の青 */
+}
+
+/* 射程範囲ハイライト */
+.grid-cell.range-highlight {
+    box-shadow: inset 0 0 0 2px rgba(0, 123, 255, 0.7); /* 内側に青い枠線 */
+}
