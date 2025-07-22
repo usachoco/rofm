@@ -1,34 +1,70 @@
-import { placedCharacters, simulateFormation, mapData, CELL_STATUS } from './data.js';
+import { placedCharacters, simulateFormation, mapData, CELL_STATUS, ALLY_CHARACTERS, ENEMY_CHARACTERS } from './data.js';
 import { clearSkillHighlights, clearSelectedSkill } from './skill.js';
+import { handleCharacterSelectionModeChange } from './mode.js';
 
 export let selectedCharacter = null;
 export let selectedCharacterType = null; // 'ally' or 'enemy'
 
 /**
- * キャラクター設定ボタンにイベントリスナーを設定する
- * @param {*} characterButtons 
- * @param {*} skillButtons 
+ * キャラクター選択ボタンを動的に生成する
  * @param {*} resultText 
  * @param {*} formationGrid 
  */
-export function setupCharacterButtons(characterButtons, resultText, formationGrid) {
-    characterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
-            // 選択状態の切り替え
-            characterButtons.forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-            selectedCharacter = button.dataset.char;
-            selectedCharacterType = button.classList.contains('enemy-btn') ? 'enemy' : 'ally';
-            // スキル選択を解除
-            clearSelectedSkill(); // clearSelectedSkill関数を呼び出す
-            resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) が選択されました。グリッドをクリックして配置してください。`;
-        });
+export function createCharacterButtons(formationGrid, resultText) {
+    // キャラクター選択ボタンを動的に生成
+    const characterSelectionDiv = document.querySelector('.character-selection');
+    ALLY_CHARACTERS.forEach(char => {
+        const button = document.createElement('button');
+        button.classList.add('char-btn');
+        button.dataset.char = char.id;
+        button.textContent = char.name;
+        characterSelectionDiv.appendChild(button);
+        setupCharacterButton(button, resultText, formationGrid)
     });
 }
 
 /**
- * 現在選択中のキャラクターを指定されたセルに設置する
+ * エネミー選択ボタンを動的に生成する
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+export function createEnemyButtons(formationGrid, resultText) {
+    // エネミー選択ボタンを動的に生成
+    const enemySelectionDiv = document.querySelector('.enemy-selection');
+    ENEMY_CHARACTERS.forEach(char => {
+        const button = document.createElement('button');
+        button.classList.add('char-btn', 'enemy-btn');
+        button.dataset.char = char.id;
+        button.textContent = char.name;
+        enemySelectionDiv.appendChild(button);
+        setupCharacterButton(button, resultText, formationGrid)
+    });
+}
+
+/**
+ * キャラクター/エネミー設定ボタンにイベントリスナーを設定する
+ * @param {*} button
+ * @param {*} skillButtons 
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+function setupCharacterButton(button, resultText, formationGrid) {
+    const characterButtons = document.querySelectorAll('.char-btn');
+    button.addEventListener('click', () => {
+        clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
+        characterButtons.forEach(btn => btn.classList.remove('selected'));  // 一旦すべてのボタンを非選択にしてから
+        button.classList.add('selected');   // このボタンだけ選択する
+        selectedCharacter = button.dataset.char;
+        selectedCharacterType = button.classList.contains('enemy-btn') ? 'enemy' : 'ally';
+        // スキル選択を解除
+        clearSelectedSkill();
+        handleCharacterSelectionModeChange(); // モード切り替えロジックを呼び出す
+        resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) が選択されました。グリッドをクリックして配置してください。`;
+    });
+}
+
+/**
+ * 現在選択中のキャラクター/エネミーを指定されたセルに設置する
  * @param {*} cell 
  * @param {*} x 
  * @param {*} y 

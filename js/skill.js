@@ -1,6 +1,7 @@
 import { placedCharacters, mapData, CELL_STATUS } from './data.js';
 import { gridWidth, gridHeight } from './grid.js';
 import { clearSelectedCharacter } from './character.js';
+import { handleSkillSelectionModeChange } from './mode.js';
 
 export let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
 
@@ -10,7 +11,8 @@ export let selectedSkillSize = null; // 選択されたスキルの範囲 (3ま�
  * @param {*} resultText 
  * @param {*} formationGrid 
  */
-export function setupSkillButtons(skillButtons, resultText, formationGrid) {
+export function setupSkillButtons(resultText, formationGrid) {
+    const skillButtons = document.querySelectorAll('.skill-btn');
     skillButtons.forEach(button => {
         button.addEventListener('click', () => {
             clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
@@ -19,21 +21,21 @@ export function setupSkillButtons(skillButtons, resultText, formationGrid) {
             button.classList.add('selected');
             selectedSkillSize = parseInt(button.dataset.skillSize);
             // キャラクター選択を解除
-            clearSelectedCharacter(); // clearSelectedCharacter関数を呼び出す
+            clearSelectedCharacter();
+            handleSkillSelectionModeChange(); // モード切り替えロジックを呼び出す
             resultText.textContent = `${selectedSkillSize}x${selectedSkillSize}スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
         });
     });
 }
 
 /**
- * マウスがマップ上に重なったときに呼び出されるイベントハンドラ
- * - 新しくスキル設置場所を検討する場合
+ * 移動中のスキル設置セルを描写する
  *   - 設置済みのスキル影響範囲を削除する
  *   - 現在のセルを中心とした仮のスキル影響範囲を描画する
  * @param {*} event 
  * @param {*} formationGrid 
  */
-export function handleCellMouseOver(event, formationGrid) {
+export function showTemporarySkillEffectRange(event, formationGrid) {
     if (selectedSkillSize) {
         clearSkillHighlights(formationGrid); // 既存のハイライトをクリア
         const cell = event.target;
@@ -50,11 +52,11 @@ export function handleCellMouseOver(event, formationGrid) {
 }
 
 /**
- * マウスがマップ外に出たときに呼び出されるイベントハンドラ
+ * 移動中のスキル設置セルを非表示にする
  * - 仮のスキル影響範囲を削除する. これがないとマップ端に描画が残ってしまう.
  * @param {*} formationGrid 
  */
-export function handleCellMouseOut(formationGrid) {
+export function hideTemporarySkillEffectRange(formationGrid) {
     // スキル設置セルを検討している状態のとき
     if (selectedSkillSize) {
         clearSkillHighlights(formationGrid);    // 仮のスキル影響範囲を消去する

@@ -45,10 +45,8 @@ export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "
 
 /**
  * マップデータを初期化する
- * @param {*} width 
- * @param {*} height 
  */
-export function initializeMapData(width, height) {
+export function initializeMapData() {
     mapData = MAP_V3_ER; // グローバルなmapDataを更新
 }
 
@@ -74,6 +72,14 @@ export function simulateFormation(resultText) {
         }
     }
     resultText.textContent = `${simulationOutput} (味方: ${allyCount}, 敵: ${enemyCount})`;
+}
+
+export async function setupCopyURLButton(resultText) {
+    // URLコピーボタンのイベントリスナー
+    const copyUrlButton = document.getElementById('copy-url-button');
+    copyUrlButton.addEventListener('click', () => 
+        copyUrl(resultText)
+    );
 }
 
 /**
