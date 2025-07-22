@@ -1,5 +1,5 @@
 import { clearAndPlaceCharacters } from './character.js';
-import { MAP_V3_ER } from './mapdata/map01.js';
+import { MAP_N1_ER, MAP_V3_ER } from './mapdata/map01.js';
 
 /** セルのステータス定義  */
 export const CELL_STATUS = {
@@ -47,7 +47,7 @@ export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "
  * マップデータを初期化する
  */
 export function initializeMapData() {
-    mapData = MAP_V3_ER; // グローバルなmapDataを更新
+    mapData = MAP_N1_ER; // グローバルなmapDataを更新
 }
 
 /**

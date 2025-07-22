@@ -4,9 +4,9 @@ import { selectedCharacter, selectedCharacterType, placeCharacter } from './char
 import { selectedSkillSize, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill } from './skill.js';
 
 /** マップの幅 */
-export const gridWidth = 40; // 48
+export const gridWidth = 62; // 48
 /** マップの高さ */
-export const gridHeight = 40; // 27
+export const gridHeight = 44; // 27
 
 const enableCollisionCheckbox = document.getElementById('enable-collision');
 const resultText = document.getElementById('result-text');
