@@ -37,11 +37,24 @@ export const ENEMY_CHARACTERS = [
     { id: 'player', name: '対戦相手' },
 ];
 
+/** 設置スキルの定義 */
+export const SKILL_RANGE_LIST = [
+    { id: 'BD_ROKISWEIL', name: 'ロキの叫び', value: 23},
+    { id: 'DC_UGLYDANCE', name: '自分勝手なダンス', value: 23},
+    { id: 'WM_SATURDAY_NIGHT_FEVER', name: 'フライデーナイトフィーバー', value: 23},
+    { id: 'WM_MELODYOFSINK', name: 'メロディーオブシンク', value: 23},
+    { id: 'EM_LIGHTNING_LAND', name: 'ライトニングランド', value: 9},
+    { id: 'SA_LANDPROTECTOR', name: 'ランドプロテクター', value: 11},
+]
+
 /** マップデータを保持する変数  */
 export let mapData = [];
 
 /** キャラクターシンボルの配置情報が格納される配列 */
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
+
+/** 設置スキルシンボルの配置情報が格納される配列 */
+export const placedSkills = {};
 
 /**
  * マップデータを初期化する
@@ -87,7 +100,11 @@ export async function setupCopyURLButton(resultText) {
  * @param {*} resultText 
  */
 export async function copyUrl(resultText) {
-    const data = await compressData(placedCharacters);
+    const allData = [
+        placedCharacters,
+        placedSkills,
+    ];
+    const data = await compressData(allData);
     const encodedData = uint8ToBase64(data); // Base64エンコード
     const url = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
     navigator.clipboard.writeText(url).then(() => {
@@ -109,7 +126,9 @@ export async function importFromUrl(formationGrid, resultText) {
     if (encodedData) {
         try {
             const decodedData = base64ToUint8(encodedData); // Base64デコード
-            const importedCharacters = await decompressData(decodedData);
+            const allData = await decompressData(decodedData);
+            const importedCharacters = allData[0];
+            // TODO: スキルデータのインポート処理を書く
             clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
             resultText.textContent = 'URLから配置データをインポートしました。';
         } catch (e) {

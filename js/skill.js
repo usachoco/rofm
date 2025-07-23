@@ -15,7 +15,6 @@ export function setupSkillButtons(resultText, formationGrid) {
     const skillButtons = document.querySelectorAll('.skill-btn');
     skillButtons.forEach(button => {
         button.addEventListener('click', () => {
-            clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
             // 選択状態の切り替え
             skillButtons.forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
@@ -37,7 +36,7 @@ export function setupSkillButtons(resultText, formationGrid) {
  */
 export function showTemporarySkillEffectRange(event, formationGrid) {
     if (selectedSkillSize) {
-        clearSkillHighlights(formationGrid); // 既存のハイライトをクリア
+        clearSkillTrace(formationGrid); // 既存のハイライトをクリア
         const cell = event.target;
         const centerX = parseInt(cell.dataset.x);
         const centerY = parseInt(cell.dataset.y);
@@ -59,21 +58,15 @@ export function showTemporarySkillEffectRange(event, formationGrid) {
 export function hideTemporarySkillEffectRange(formationGrid) {
     // スキル設置セルを検討している状態のとき
     if (selectedSkillSize) {
-        clearSkillHighlights(formationGrid);    // 仮のスキル影響範囲を消去する
+        clearSkillTrace(formationGrid);    // 仮のスキル影響範囲を消去する
     }
 }
 
 /**
- * マップ上のスキル関連エフェクト（ハイライト）を削除する
- * - スキル設置セル
- * - スキル効果範囲セル
- * - スキルの影響を受けているキャラクターセル
+ * 設置済みのスキル関連エフェクトを削除する
  * @param {*} formationGrid 
  */
 export function clearSkillHighlights(formationGrid) {
-    formationGrid.querySelectorAll('.grid-cell.skill-highlight').forEach(cell => {
-        cell.classList.remove('skill-highlight');
-    });
     formationGrid.querySelectorAll('.grid-cell.skill-target').forEach(cell => {
         cell.classList.remove('skill-target');
     });
@@ -81,6 +74,17 @@ export function clearSkillHighlights(formationGrid) {
         cell.classList.remove('skill-affected');
     });
 }
+
+/**
+ * スキル選択中の軌跡を削除する
+ * @param {*} formationGrid 
+ */
+export function clearSkillTrace(formationGrid) {
+    formationGrid.querySelectorAll('.grid-cell.skill-highlight').forEach(cell => {
+        cell.classList.remove('skill-highlight');
+    });
+}
+
 
 /**
  * 設置位置が確定したスキルの影響範囲を可視化する
@@ -91,7 +95,7 @@ export function clearSkillHighlights(formationGrid) {
  * @param {*} resultText 
  */
 export function activateSkill(cell, x, y, formationGrid, resultText) {
-    clearSkillHighlights(formationGrid); // スキル発動前に既存のハイライトをクリア
+    clearSkillTrace(formationGrid); // スキル選択中の軌跡をクリア
     cell.classList.add('skill-target'); // ターゲットセルをハイライト
     const affectedCells = getSkillAffectedCells(x, y, selectedSkillSize);
     let affectedCharacters = [];

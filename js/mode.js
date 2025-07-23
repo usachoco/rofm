@@ -35,7 +35,6 @@ export function initializeMode(gridElement, resultTextElement) {
             toggleLineOfSightModeButton.classList.toggle('selected', isLineOfSightMode);
             
             clearSelectedCharacter();
-            clearSkillHighlights(formationGrid);
             clearLineOfSightHighlights();
             fixedLineOfSightTarget = null;
 
@@ -127,8 +126,6 @@ export function handleCharacterSelectionModeChange() {
         toggleLineOfSightModeButton.classList.remove('selected');
     }
     fixedLineOfSightTarget = null;
-    // スキル設置モードを解除する
-    clearSkillHighlights(formationGrid);
 }
 
 // スキル選択時のモード解除
@@ -138,5 +135,4 @@ export function handleSkillSelectionModeChange() {
         toggleLineOfSightModeButton.classList.remove('selected');
     }
     fixedLineOfSightTarget = null;
-    clearSkillHighlights(formationGrid);
 }

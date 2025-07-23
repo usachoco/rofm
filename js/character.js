@@ -1,5 +1,5 @@
 import { placedCharacters, simulateFormation, mapData, CELL_STATUS, ALLY_CHARACTERS, ENEMY_CHARACTERS } from './data.js';
-import { clearSkillHighlights, clearSelectedSkill } from './skill.js';
+import { clearSelectedSkill } from './skill.js';
 import { handleCharacterSelectionModeChange } from './mode.js';
 
 export let selectedCharacter = null;
@@ -80,7 +80,6 @@ export function createEnemyButtons(formationGrid, resultText) {
 function setupCharacterButton(button, resultText, formationGrid) {
     const characterButtons = document.querySelectorAll('.char-btn');
     button.addEventListener('click', () => {
-        clearSkillHighlights(formationGrid); // 新しい操作開始時にハイライトをクリア
         characterButtons.forEach(btn => btn.classList.remove('selected'));  // 一旦すべてのボタンを非選択にしてから
         button.classList.add('selected');   // このボタンだけ選択する
         selectedCharacter = button.dataset.char;
