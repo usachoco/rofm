@@ -149,102 +149,101 @@ export function getSkillAffectedCells(centerX, centerY, skillSize) {
 }
 
 /**
- * 起点と終点を結ぶセル座標の配列を返す.
- * この関数では障害物の存在が考慮される.
- * @param {*} x0 起点
- * @param {*} y0 起点
- * @param {*} x1 終点
- * @param {*} y1 終点
- * @returns {Array} セル座標 {x: x0, y: y0} の配列
+ * 2次元配列をピクセルグリッドと見なし、円の範囲内のセル座標を返す.
+ *
+ * @param {number} centerX - 円の中心のX座標
+ * @param {number} centerY - 円の中心のY座標
+ * @param {number} radius - 円の半径
+ * @returns {Array<Array<number,number>>} セルの座標の配列. 例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-export function getLineOfSightCells(x0, y0, x1, y1) {
-    const cells = [];
-    let dx = Math.abs(x1 - x0);
-    let dy = Math.abs(y1 - y0);
-    let sx = (x0 < x1) ? 1 : -1;
-    let sy = (y0 < y1) ? 1 : -1;
-    let err = dx - dy;
-    while (true) {
-        // 現在のセルがグリッド範囲内にあるかチェック
-        if (x0 < 0 || x0 >= gridWidth || y0 < 0 || y0 >= gridHeight) {
-            break; // 範囲外に出たら終了
-        }
-        // 射線を遮るセル（OBSTACLE）があるかチェック
-        // ただし、始点セル自体はチェックしない（始点に障害物があっても射線はそこから始まるため）
-        if (!((x0 === x1 && y0 === y1) || (x0 === x0 && y0 === y0))) { // 終点または始点でない場合
-            const cellStatus = mapData[y0][x0];
-            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                // 射線を遮るセルが見つかった場合、そのセルまでを射線として返し、終了
-                cells.push({ x: x0, y: y0 }); // 障害物セル自体も射線に含まれる
-                break;
+function getCircleRangeCells(centerX, centerY, radius) {
+    const affectedCells = [];
+    // 円の境界ボックスを計算
+    const minX = Math.max(0, Math.floor(centerX - radius));
+    const maxX = Math.min(gridWidth - 1, Math.ceil(centerX + radius));
+    const minY = Math.max(0, Math.floor(centerY - radius));
+    const maxY = Math.min(gridHeight - 1, Math.ceil(centerY + radius));
+    // 境界ボックス内のすべてのセルを反復処理
+    for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
+            // 各セルが円の内側にあるかどうかをチェック（中心からの距離が半径以下か）
+            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            if (distance <= radius) {
+                affectedCells.push({x: x, y: y});
             }
         }
-        cells.push({ x: x0, y: y0 });
-        // プレゼンハムのアルゴリズム
-        if (x0 === x1 && y0 === y1) break;
-        let e2 = 2 * err;
+    }
+    return affectedCells;
+}
+
+/**
+ * 2次元配列をピクセルグリッドと見なし、線分に含まれるセルの座標を返す.
+ * ただし、障害物で遮られる場合、その線分は成立しないものとして無視する.
+ *
+ * @param {object} start 開始点 {x: number, y: number}
+ * @param {object} end 終了点 {x: number, y: number}
+ * @returns {Array<object>} 線分上のセルの座標の配列。例: [{x: 0, y: 0}, {x: 1, y: 1}]
+ */
+function getLineOfSightCells(start, end) {
+    // 基本はブレゼンハムの線分アルゴリズムを採用
+    const cells = [];
+    let x0 = start.x;
+    let y0 = start.y;
+    const x1 = end.x;
+    const y1 = end.y;
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = (x0 < x1) ? 1 : -1;
+    const sy = (y0 < y1) ? 1 : -1;
+    let err = dx - dy;
+    while (true) {
+        // 障害物判定は独自処理
+        const cellStatus = mapData[y0][x0];
+        if (cellStatus & CELL_STATUS.OBSTACLE === CELL_STATUS.OBSTACLE) {
+            return [];
+        }
+        cells.push({ x:x0, y:y0 });
+        if (x0 === x1 && y0 === y1) {
+          break;
+        }
+        const e2 = 2 * err;
         if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
+          err -= dy;
+          x0 += sx;
         }
         if (e2 < dx) {
-            err += dx;
-            y0 += sy;
+          err += dx;
+          y0 += sy;
         }
     }
     return cells;
 }
 
 /**
- * 指定されたセルを中心とした円形の射程範囲セル座標の配列を返す.
- * この関数では障害物の存在が考慮される.
- * @param {*} centerX 中心
- * @param {*} centerY 中心
- * @param {*} range 射程距離
- * @returns {Array} セル座標 {x: x0, y: y0} の配列
+ * 射程範囲内かつ障害物に遮られないセルの座標を返す.
+ * @param {number} centerX 円の中心のX座標
+ * @param {number} centerY 円の中心のY座標
+ * @param {number} radius 円の半径
+ * @returns {Array<Array<number, number>>} セルの座標の配列. 例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-export function getRangeAffectedCells(centerX, centerY, range) {
-    const cells = new Set(); // 重複を避けるためにSetを使用
-    for (let y = centerY - range; y <= centerY + range; y++) {
-        for (let x = centerX - range; x <= centerX + range; x++) {
-            // グリッド範囲内にあるかチェック
-            if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
-                // 中心からの距離を計算し、円形に含めるか判断
-                const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-                if (distance <= range) {
-                    // 射線上に障害物がないかチェック
-                    const lineOfSight = getLineOfSightCells(centerX, centerY, x, y);
-                    let hasObstacle = false;
-                    // 始点と終点を除く射線上のセルをチェック
-                    for (let i = 0; i < lineOfSight.length - 1; i++) {
-                        const losCell = lineOfSight[i];
-                        // 始点セルはチェックしない
-                        if (losCell.x === centerX && losCell.y === centerY) {
-                            continue;
-                        }
-                        const cellStatus = mapData[losCell.y][losCell.x];
-                        if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                            hasObstacle = true;
-                            break;
-                        }
-                    }
-                    // 終点セルが障害物の場合も射線は通らないと判断
-                    if (lineOfSight.length > 0) {
-                        const lastCell = lineOfSight[lineOfSight.length - 1];
-                        if (lastCell.x === x && lastCell.y === y) {
-                            const cellStatus = mapData[lastCell.y][lastCell.x];
-                            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                                hasObstacle = true;
-                            }
-                        }
-                    }
-                    // 経路上に障害物がないセルは有効射程範囲として追加する
-                    if (!hasObstacle) {
-                        cells.add(JSON.stringify({ x, y }));
-                    }
-                }
-            }
+export function getRangeAffectedCells(centerX, centerY, radius) {
+    let cells = [];
+    // 射程範囲円を取得する
+    const circleRange = getCircleRangeCells(centerX, centerY, radius);
+    // 射程範囲内で射線が通るセルを取得する
+    circleRange.forEach(end => {
+        const start = {x:centerX, y:centerY};
+        const activeCells = getLineOfSightCells(start, end);
+        if (activeCells.length > 0) {
+            cells = cells.concat(activeCells);
         }
-    }
-    return Array.from(cells).map(s => JSON.parse(s));
+    });
+    // 重複しているセルを排除する
+    const uniqueActiveCellsMap = new Map();
+    cells.forEach((cell) => {
+        const key = `${cell.x}_${cell.y}`;
+        uniqueActiveCellsMap.set(key, cell);
+    });
+    const uniqueActiveCells = Array.from(uniqueActiveCellsMap.values());
+    return uniqueActiveCells;
 }

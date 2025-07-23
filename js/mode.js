@@ -1,6 +1,5 @@
-import { getLineOfSightCells, getRangeAffectedCells, clearSkillHighlights } from './skill.js';
+import { getRangeAffectedCells, clearSkillHighlights } from './skill.js';
 import { clearSelectedCharacter } from './character.js';
-import { placedCharacters } from './data.js';
 
 let isLineOfSightMode = false;
 let currentRange = 9;
@@ -91,22 +90,6 @@ export function applyLineOfSightHighlight(targetX, targetY) {
         const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
         if (targetCell) {
             targetCell.classList.add('range-highlight');
-        }
-    });
-
-    Object.values(placedCharacters).forEach(char => {
-        const charX = char.x;
-        const charY = char.y;
-        const distance = Math.sqrt(Math.pow(targetX - charX, 2) + Math.pow(targetY - charY, 2));
-
-        if (distance <= currentRange) {
-            const lineCells = getLineOfSightCells(charX, charY, targetX, targetY);
-            lineCells.forEach(coord => {
-                const lineCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
-                if (lineCellElement) {
-                    lineCellElement.classList.add('line-of-sight-highlight');
-                }
-            });
         }
     });
 }
