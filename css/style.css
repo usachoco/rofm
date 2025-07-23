@@ -49,6 +49,7 @@ main {
     flex: 1;
     padding: 20px;
     gap: 20px;
+    align-items: flex-start; /* 上揃えにする */
 }
 
 /* サイドメニュー */
@@ -209,11 +210,12 @@ main {
 }
 
 .formation-area {
-    flex: 1;
+    flex: 1; /* 残りのスペースを埋める */
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-width: 400px; /* 最小幅を設定 */
 }
 
 .formation-area h2 {
@@ -269,11 +271,15 @@ main {
 /* 必要であれば、特定のキャラクターに個別のスタイルを追加 */
 
 .simulation-results {
-    margin-top: 20px;
+    flex: 0 0 280px; /* 固定幅を設定し、伸縮しないようにする */
     padding: 15px;
     background-color: #e9f7ef;
     border: 1px solid #d4edda;
     border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow-y: auto; /* 内容がはみ出したらスクロール */
+    height: calc(100vh - 100px); /* ヘッダーとフッターを考慮した高さ */
+    margin-top: 0; /* mainのalign-items: flex-start; に合わせる */
 }
 
 .simulation-results h3 {
