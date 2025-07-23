@@ -6,6 +6,35 @@ export let selectedCharacter = null;
 export let selectedCharacterType = null; // 'ally' or 'enemy'
 
 /**
+ * 指定された座標のキャラクターを削除する
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} formationGrid 
+ * @param {*} resultText 
+ */
+export function deleteCharacter(x, y, formationGrid, resultText) {
+    const cellKey = `${x}-${y}`;
+    const characterData = placedCharacters[cellKey];
+
+    if (characterData) {
+        const cell = formationGrid.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        if (cell) {
+            const charIcon = cell.querySelector('.character-icon');
+            if (charIcon) {
+                cell.removeChild(charIcon);
+            }
+            cell.classList.remove('has-character');
+            cell.classList.remove(`${characterData.type}-${characterData.name}`);
+            delete placedCharacters[cellKey];
+            resultText.textContent = `(${x},${y}) の ${characterData.name} を削除しました。`;
+            simulateFormation(resultText); // シミュレーションを再実行
+        }
+    } else {
+        resultText.textContent = `(${x},${y}) にはキャラクターがいません。`;
+    }
+}
+
+/**
  * キャラクター選択ボタンを動的に生成する
  * @param {*} resultText 
  * @param {*} formationGrid 

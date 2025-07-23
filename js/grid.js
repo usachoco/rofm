@@ -1,3 +1,4 @@
+import { showContextMenu } from './ui.js';
 import { mapData, CELL_STATUS, placedCharacters } from './data.js'; // placedCharacters をインポート
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
 import { selectedSkillSize, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill } from './skill.js';
@@ -170,6 +171,19 @@ function setupGridEventListeners(formationGrid) {
                 resultText.textContent = 'キャラクターまたはスキルを選択してください。';
             }
         });
+
+        // 右クリックイベントリスナーを追加
+        cell.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // デフォルトのコンテキストメニューを抑制
+            const x = parseInt(event.target.dataset.x);
+            const y = parseInt(event.target.dataset.y);
+            const cellKey = `${x}-${y}`;
+            if (placedCharacters[cellKey]) {
+                // キャラクターが存在する場合のみコンテキストメニューを表示
+                showContextMenu(event.clientX, event.clientY, x, y);
+            }
+        });
+
         cell.addEventListener('mouseover', (event) => {
             if (getIsLineOfSightMode() && selectedSkillSize) {
                 clearLineOfSightHighlights();
@@ -187,6 +201,14 @@ function setupGridEventListeners(formationGrid) {
                 hideTemporarySkillEffectRange(formationGrid);
             }
         });
+    });
+
+    // グリッド外をクリックしたらコンテキストメニューを非表示にする
+    document.addEventListener('click', (event) => {
+        const contextMenu = document.getElementById('context-menu');
+        if (contextMenu && !contextMenu.contains(event.target)) {
+            contextMenu.style.display = 'none';
+        }
     });
 }
 
