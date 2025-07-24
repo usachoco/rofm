@@ -248,7 +248,9 @@ main {
     font-size: 0.6em; /* セルサイズに合わせて調整 */
     color: #666;
     cursor: pointer;
-    transition: background-color 0.1s;
+    /* transition: background-color 0.1s; */ /* background-image に変更するためコメントアウト */
+    background-color: transparent; /* デフォルトの背景色を透明に */
+    transition: background-image 0.1s ease-out; /* スムーズなトランジション */
 }
 
 .grid-cell:hover {
@@ -323,23 +325,29 @@ footer {
     color: white;
 }
 
-/* スキル範囲のハイライトスタイル */
+/* スキル範囲のハイライトスタイル (削除) */
+/*
 .grid-cell.skill-highlight {
-    background-color: rgba(255, 255, 0, 0.5); /* 半透明の黄色 */
-    position: relative; /* z-indexを有効にするため */
-    z-index: 10; /* 射程範囲より前面に表示 */
+    background-color: rgba(255, 255, 0, 0.5);
+    position: relative;
+    z-index: 10;
 }
+*/
 
-/* スキル発動のターゲットセル */
+/* スキル発動のターゲットセル (削除) */
+/*
 .grid-cell.skill-target {
-    background-color: rgba(255, 165, 0, 0.5); /* 半透明のオレンジ */
+    background-color: rgba(255, 165, 0, 0.5);
     border: 2px solid #ff8c00;
 }
+*/
 
-/* スキルによって影響を受けるキャラクターがいるセル */
+/* スキルによって影響を受けるキャラクターがいるセル (削除) */
+/*
 .grid-cell.skill-affected {
-    box-shadow: inset 0 0 0 3px #dc3545; /* 内側に赤い枠線 */
+    box-shadow: inset 0 0 0 3px #dc3545;
 }
+*/
 
 /* 侵入不可セルのスタイル */
 .grid-cell.softwall {

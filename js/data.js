@@ -39,12 +39,12 @@ export const ENEMY_CHARACTERS = [
 
 /** 設置スキルの定義 */
 export const SKILL_RANGE_LIST = [
-    { id: 'BD_ROKISWEIL', name: 'ロキの叫び', value: 23},
-    { id: 'DC_UGLYDANCE', name: '自分勝手なダンス', value: 23},
-    { id: 'WM_SATURDAY_NIGHT_FEVER', name: 'フライデーナイトフィーバー', value: 23},
-    { id: 'WM_MELODYOFSINK', name: 'メロディーオブシンク', value: 23},
-    { id: 'EM_LIGHTNING_LAND', name: 'ライトニングランド', value: 9},
-    { id: 'SA_LANDPROTECTOR', name: 'ランドプロテクター', value: 11},
+    { id: 'BD_ROKISWEIL', name: 'ロキの叫び', value: 23, color: '#ff0000'},
+    { id: 'DC_UGLYDANCE', name: '自分勝手なダンス', value: 23, color: '#00ff00'},
+    { id: 'WM_SATURDAY_NIGHT_FEVER', name: 'フライデーナイトフィーバー', value: 23, color: '#0000ff'},
+    { id: 'WM_MELODYOFSINK', name: 'メロディーオブシンク', value: 23, color: '#ff00ff'},
+    { id: 'EM_LIGHTNING_LAND', name: 'ライトニングランド', value: 9, color: '#ff0000'},
+    { id: 'SA_LANDPROTECTOR', name: 'ランドプロテクター', value: 11, color: '#00ff00'},
 ]
 
 /** マップデータを保持する変数  */
@@ -56,11 +56,24 @@ export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "
 /** 設置スキルシンボルの配置情報が格納される配列 */
 export const placedSkills = {};
 
+/** 各セルに影響を与えているスキルIDのリストが格納されるマップ */
+export const cellSkillEffects = {}; // { "x-y": Set<string> }
+
 /**
  * マップデータを初期化する
  */
 export function initializeMapData() {
     mapData = MAP_PRO; // グローバルなmapDataを更新
+    initializeCellSkillEffects(); // スキル効果マップも初期化
+}
+
+/**
+ * セルスキル効果マップを初期化またはリセットする
+ */
+export function initializeCellSkillEffects() {
+    for (const key in cellSkillEffects) {
+        delete cellSkillEffects[key];
+    }
 }
 
 /**

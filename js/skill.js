@@ -1,10 +1,10 @@
-import { placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST } from './data.js';
-import { gridWidth, gridHeight } from './grid.js';
+import { placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST, cellSkillEffects } from './data.js'; // cellSkillEffects をインポート
+import { gridWidth, gridHeight, updateCellSkillOverlay } from './grid.js'; // updateCellSkillOverlay をインポート
 import { clearSelectedCharacter } from './character.js';
 import { handleSkillSelectionModeChange } from './mode.js';
 
-export let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
-
+export let selectedSkill = null; // 選択されたスキルオブジェクト (id, value, color を含む)
+let tempSkillAffectedCells = []; // 一時的なスキル影響範囲のセルを追跡
 
 /**
  * スキル選択ボタンを動的に生成する
@@ -17,7 +17,7 @@ export function createSkillButtons(formationGrid, resultText) {
     SKILL_RANGE_LIST.forEach(skill => {
         const button = document.createElement('button');
         button.classList.add('skill-btn');
-        button.dataset.skill = skill.id;
+        button.dataset.skillId = skill.id; // skillId をデータ属性に追加
         button.dataset.skillSize = skill.value;
         button.textContent = skill.name;
         skillSelectionDiv.appendChild(button);
@@ -38,7 +38,12 @@ function setupSkillButtons(button, resultText, formationGrid) {
             // 選択状態の切り替え
             skillButtons.forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
-            selectedSkillSize = parseInt(button.dataset.skillSize);
+            
+            const skillId = button.dataset.skillId;
+            const skillSize = parseInt(button.dataset.skillSize);
+            const skillColor = SKILL_RANGE_LIST.find(s => s.id === skillId).color; // 色を取得
+            selectedSkill = { id: skillId, size: skillSize, color: skillColor }; // selectedSkill を設定
+
             // キャラクター選択を解除
             clearSelectedCharacter();
             handleSkillSelectionModeChange(); // モード切り替えロジックを呼び出す
@@ -55,17 +60,36 @@ function setupSkillButtons(button, resultText, formationGrid) {
  * @param {*} formationGrid 
  */
 export function showTemporarySkillEffectRange(event, formationGrid) {
-    if (selectedSkillSize) {
-        clearSkillTrace(formationGrid); // 既存のハイライトをクリア
+    if (selectedSkill) {
+        // 既存の一時的なスキル効果をクリア
+        tempSkillAffectedCells.forEach(coord => {
+            const key = `${coord.x}-${coord.y}`;
+            if (cellSkillEffects[key]) {
+                cellSkillEffects[key].delete(selectedSkill.id);
+                const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                if (targetCell) {
+                    updateCellSkillOverlay(targetCell, coord.x, coord.y);
+                }
+            }
+        });
+        tempSkillAffectedCells = []; // リセット
+
         const cell = event.target;
         const centerX = parseInt(cell.dataset.x);
         const centerY = parseInt(cell.dataset.y);
-        const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkillSize);
+        const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkill.size);
+        
         affectedCells.forEach(coord => {
+            const key = `${coord.x}-${coord.y}`;
+            if (!cellSkillEffects[key]) {
+                cellSkillEffects[key] = new Set();
+            }
+            cellSkillEffects[key].add(selectedSkill.id);
             const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
             if (targetCell) {
-                targetCell.classList.add('skill-highlight');
+                updateCellSkillOverlay(targetCell, coord.x, coord.y);
             }
+            tempSkillAffectedCells.push(coord); // 一時的なセルを追跡
         });
     }
 }
@@ -77,8 +101,18 @@ export function showTemporarySkillEffectRange(event, formationGrid) {
  */
 export function hideTemporarySkillEffectRange(formationGrid) {
     // スキル設置セルを検討している状態のとき
-    if (selectedSkillSize) {
-        clearSkillTrace(formationGrid);    // 仮のスキル影響範囲を消去する
+    if (selectedSkill) {
+        tempSkillAffectedCells.forEach(coord => {
+            const key = `${coord.x}-${coord.y}`;
+            if (cellSkillEffects[key]) {
+                cellSkillEffects[key].delete(selectedSkill.id);
+                const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                if (targetCell) {
+                    updateCellSkillOverlay(targetCell, coord.x, coord.y);
+                }
+            }
+        });
+        tempSkillAffectedCells = []; // リセット
     }
 }
 
@@ -86,43 +120,51 @@ export function hideTemporarySkillEffectRange(formationGrid) {
  * 設置済みのスキル関連エフェクトを削除する
  * @param {*} formationGrid 
  */
-export function clearSkillHighlights(formationGrid) {
-    formationGrid.querySelectorAll('.grid-cell.skill-target').forEach(cell => {
-        cell.classList.remove('skill-target');
-    });
-    formationGrid.querySelectorAll('.grid-cell.skill-affected').forEach(cell => {
-        cell.classList.remove('skill-affected');
-    });
-}
-
-/**
- * スキル選択中の軌跡を削除する
- * @param {*} formationGrid 
- */
-export function clearSkillTrace(formationGrid) {
-    formationGrid.querySelectorAll('.grid-cell.skill-highlight').forEach(cell => {
-        cell.classList.remove('skill-highlight');
-    });
+export function clearAllSkillEffects(formationGrid) { // 関数名を変更
+    for (const key in cellSkillEffects) {
+        const coords = key.split('-').map(Number);
+        const cellElement = formationGrid.querySelector(`[data-x="${coords[0]}"][data-y="${coords[1]}"]`);
+        if (cellElement) {
+            cellSkillEffects[key].clear(); // Setをクリア
+            updateCellSkillOverlay(cellElement, coords[0], coords[1]); // 背景色を更新
+        }
+        delete cellSkillEffects[key]; // マップからエントリを削除
+    }
 }
 
 /**
  * 設置位置が確定したスキルの影響範囲を可視化する
  * @param {*} cell 設置先セル
- * @param {*} x 設置先セルのx座標 // TODO いらないのでは
- * @param {*} y 設置先セルのy座標 // TODO いらないのでは
+ * @param {*} x 設置先セルのx座標
+ * @param {*} y 設置先セルのy座標
  * @param {*} formationGrid
  * @param {*} resultText 
  */
 export function activateSkill(cell, x, y, formationGrid, resultText) {
-    clearSkillTrace(formationGrid); // スキル選択中の軌跡をクリア
-    cell.classList.add('skill-target'); // ターゲットセルをハイライト
-    const affectedCells = getSkillAffectedCells(x, y, selectedSkillSize);
+    // 一時的なハイライトをクリア（マウスアウト時と同じロジック）
+    tempSkillAffectedCells.forEach(coord => {
+        const key = `${coord.x}-${coord.y}`;
+        if (cellSkillEffects[key]) {
+            cellSkillEffects[key].delete(selectedSkill.id);
+            const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+            if (targetCell) {
+                updateCellSkillOverlay(targetCell, coord.x, coord.y);
+            }
+        }
+    });
+    tempSkillAffectedCells = []; // リセット
+
+    const affectedCells = getSkillAffectedCells(x, y, selectedSkill.size);
     let affectedCharacters = [];
     affectedCells.forEach(coord => {
         const key = `${coord.x}-${coord.y}`;
+        if (!cellSkillEffects[key]) {
+            cellSkillEffects[key] = new Set();
+        }
+        cellSkillEffects[key].add(selectedSkill.id); // 確定したスキルIDを追加
         const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
         if (affectedCellElement) {
-            affectedCellElement.classList.add('skill-affected'); // スキル影響範囲内のすべてのセルをハイライト
+            updateCellSkillOverlay(affectedCellElement, coord.x, coord.y); // 背景色を更新
         }
         if (placedCharacters[key]) {
             affectedCharacters.push(placedCharacters[key]); // 影響を受けるキャラクターをピックアップ
@@ -130,9 +172,9 @@ export function activateSkill(cell, x, y, formationGrid, resultText) {
     });
     if (affectedCharacters.length > 0) {
         const charNames = affectedCharacters.map(char => `${char.name}(${char.type === 'ally' ? '味方' : '敵'})`).join(', ');
-        resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
+        resultText.textContent = `(${x},${y})に${selectedSkill.size}x${selectedSkill.size}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
     } else {
-        resultText.textContent = `(${x},${y})に${selectedSkillSize}x${selectedSkillSize}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
+        resultText.textContent = `(${x},${y})に${selectedSkill.size}x${selectedSkill.size}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
     }
     clearSelectedSkill();
 }
@@ -144,7 +186,7 @@ export function activateSkill(cell, x, y, formationGrid, resultText) {
  */
 export function clearSelectedSkill() {
     document.querySelectorAll('.skill-btn').forEach(btn => btn.classList.remove('selected'));
-    selectedSkillSize = null;
+    selectedSkill = null; // selectedSkill を null にリセット
 }
 
 /**

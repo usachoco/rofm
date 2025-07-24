@@ -1,4 +1,4 @@
-import { getRangeAffectedCells, clearSkillHighlights } from './skill.js';
+import { getRangeAffectedCells, clearAllSkillEffects } from './skill.js';
 import { clearSelectedCharacter } from './character.js';
 
 let isLineOfSightMode = false;
@@ -50,7 +50,7 @@ export function initializeMode(gridElement, resultTextElement) {
 // 全ての選択状態とモードをクリアする関数
 export function resetSelectionAndMode() {
     clearSelectedCharacter();
-    clearSkillHighlights(formationGrid); // スキルハイライトもクリア
+    clearAllSkillEffects(formationGrid); // スキルハイライトもクリア
     clearLineOfSightHighlights(); // 射線ハイライトもクリア
     isLineOfSightMode = false;
     fixedLineOfSightTarget = null;

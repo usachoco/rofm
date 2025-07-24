@@ -1,6 +1,6 @@
 import { createGrid } from './grid.js';
 import { clearAllCharacters, deleteCharacter } from './character.js'; // deleteCharacter をインポート
-import { clearSkillHighlights } from './skill.js';
+import { clearAllSkillEffects } from './skill.js';
 
 let contextMenu = null; // コンテキストメニュー要素を保持する変数
 
@@ -12,7 +12,7 @@ export function setupUI(formationGrid, resultText) {
     const resetFormationButton = document.getElementById('reset-formation');
     resetFormationButton.addEventListener('click', () => {
         clearAllCharacters(formationGrid); // 全ての配置をクリア
-        clearSkillHighlights(formationGrid); // リセット時にもスキルハイライトをクリア
+        clearAllSkillEffects(formationGrid); // リセット時にもスキルハイライトをクリア
         createGrid(formationGrid); // グリッドを再生成して初期状態に戻す
         resultText.textContent = '配置がリセットされました。';
     });
