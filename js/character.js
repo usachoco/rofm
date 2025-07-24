@@ -78,8 +78,8 @@ export function createEnemyButtons(formationGrid, resultText) {
  * @param {*} formationGrid 
  */
 function setupCharacterButton(button, resultText, formationGrid) {
-    const characterButtons = document.querySelectorAll('.char-btn');
     button.addEventListener('click', () => {
+        const characterButtons = document.querySelectorAll('.char-btn');
         characterButtons.forEach(btn => btn.classList.remove('selected'));  // 一旦すべてのボタンを非選択にしてから
         button.classList.add('selected');   // このボタンだけ選択する
         selectedCharacter = button.dataset.char;

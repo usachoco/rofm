@@ -1,5 +1,12 @@
-import { clearAndPlaceCharacters } from './character.js';
-import { MAP_N1_ER, MAP_V3_ER, MAP_40_SQUARE, MAP_PRO } from './mapdata/map01.js';
+import { clearAndPlaceCharacters, clearAllCharacters } from './character.js';
+import { MAP_LIST } from './mapdata/map01.js';
+import { createGrid } from './grid.js';
+
+
+/** マップの幅 */
+export let gridWidth = 0;
+/** マップの高さ */
+export let gridHeight = 0;
 
 /** セルのステータス定義  */
 export const CELL_STATUS = {
@@ -49,6 +56,7 @@ export const SKILL_RANGE_LIST = [
 
 /** マップデータを保持する変数  */
 export let mapData = [];
+export let mapID = '';
 
 /** キャラクターシンボルの配置情報が格納される配列 */
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
@@ -60,10 +68,59 @@ export const placedSkills = {};
 export const cellSkillEffects = {}; // { "x-y": Set<string> }
 
 /**
+ * マップ選択ボタンを動的に生成する
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+export function createMapButtons(formationGrid, resultText) {
+    // マップ選択ボタンを動的に生成
+    const mapSelectionDiv = document.querySelector('.map-selection');
+    MAP_LIST.forEach(map => {
+        const button = document.createElement('button');
+        button.classList.add('map-btn');
+        button.dataset.map = map.id;
+        button.textContent = map.name;
+        mapSelectionDiv.appendChild(button);
+        setupMapButton(button, resultText, formationGrid)
+    });
+}
+
+/**
+ * マップ設定ボタンにイベントリスナーを設定する
+ * @param {*} button
+ * @param {*} skillButtons 
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+function setupMapButton(button, resultText, formationGrid) {
+    button.addEventListener('click', () => {
+        const mapButtons = document.querySelectorAll('.map-btn');
+        // キャラクタ配置初期化
+        clearAllCharacters(formationGrid);
+        // マップ読み込み
+        initializeMapData(button.dataset.map);
+        createGrid(formationGrid);
+        resultText.textContent = `${button.textContent} が選択されました。`;
+        mapButtons.forEach(btn => btn.classList.remove('selected'));  // 一旦すべてのボタンを非選択にしてから
+        button.classList.add('selected');   // このボタンだけ選択する
+    });
+}
+
+/**
+ * マップボタンの選択状態を解除する
+ */
+export function clearSelectedMap() {
+    document.querySelectorAll('.map-btn').forEach(btn => btn.classList.remove('selected'));
+}
+
+/**
  * マップデータを初期化する
  */
-export function initializeMapData() {
-    mapData = MAP_PRO; // グローバルなmapDataを更新
+export function initializeMapData(id) {
+    mapID = id; // グローバルなmapNameを更新
+    mapData = MAP_LIST.find(map => map.id === id).data; // グローバルなmapDataを更新
+    gridWidth = mapData[0].length; // グローバルなgridWidthを更新
+    gridHeight = mapData.length;
     initializeCellSkillEffects(); // スキル効果マップも初期化
 }
 
@@ -114,6 +171,7 @@ export async function setupCopyURLButton(resultText) {
  */
 export async function copyUrl(resultText) {
     const allData = [
+        mapID,
         placedCharacters,
         placedSkills,
     ];
@@ -140,9 +198,12 @@ export async function importFromUrl(formationGrid, resultText) {
         try {
             const decodedData = base64ToUint8(encodedData); // Base64デコード
             const allData = await decompressData(decodedData);
-            const importedCharacters = allData[0];
-            // TODO: スキルデータのインポート処理を書く
+            const importedMapID = allData[0];
+            const importedCharacters = allData[1];
+            initializeMapData(importedMapID);
+            createGrid(formationGrid);
             clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
+            // TODO: スキルデータのインポート処理を書く
             resultText.textContent = 'URLから配置データをインポートしました。';
         } catch (e) {
             resultText.textContent = 'URLからのデータインポートに失敗しました。データが破損している可能性があります。';

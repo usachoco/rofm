@@ -1,5 +1,5 @@
 import { showContextMenu } from './ui.js';
-import { mapData, CELL_STATUS, placedCharacters, cellSkillEffects, SKILL_RANGE_LIST } from './data.js'; // cellSkillEffects, SKILL_RANGE_LIST をインポート
+import { mapData, CELL_STATUS, placedCharacters, cellSkillEffects, SKILL_RANGE_LIST, gridWidth, gridHeight } from './data.js'; // cellSkillEffects, SKILL_RANGE_LIST をインポート
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
 import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill } from './skill.js';
 import { getIsLineOfSightMode, getFixedLineOfSightTarget, setFixedLineOfSightTarget, applyLineOfSightHighlight, handleLineOfSightMouseOver, clearLineOfSightHighlights } from './mode.js';
@@ -15,11 +15,6 @@ let mapOffsetX = 0; // マップの現在のXオフセット
 let mapOffsetY = 0; // マップの現在のYオフセット
 let animationFrameId = null; // requestAnimationFrame のID
 
-/** マップの幅 */
-export const gridWidth = 40; // 48
-/** マップの高さ */
-export const gridHeight = 37; // 27
-
 const enableCollisionCheckbox = document.getElementById('enable-collision');
 const resultText = document.getElementById('result-text');
 
@@ -30,13 +25,14 @@ const resultText = document.getElementById('result-text');
  * @param {*} width 
  * @param {*} height 
  */
-export function createGrid(formationGrid, width = gridWidth, height = gridHeight) {
+export function createGrid(formationGrid) {
+
     formationGrid.innerHTML = '';
     // グリッドのCSS変数を設定
-    formationGrid.style.setProperty('--grid-width', width);
-    formationGrid.style.setProperty('--grid-height', height);
-    for (let i = 0; i < height; i++) {
-        for (let j = 0; j < width; j++) {
+    formationGrid.style.setProperty('--grid-width', gridWidth);
+    formationGrid.style.setProperty('--grid-height', gridHeight);
+    for (let i = 0; i < gridHeight; i++) {
+        for (let j = 0; j < gridWidth; j++) {
             const cell = document.createElement('div');
             cell.classList.add('grid-cell');
             cell.dataset.x = j;
