@@ -8,8 +8,15 @@ let draggedCharacterElement = null; // ドラッグ中のキャラクター要�
 let originalCell = null; // ドラッグ開始時のセル
 let draggedCharacterData = null; // ドラッグ中のキャラクターデータ
 
+let isDraggingMap = false; // マップドラッグ中かどうか
+let startDragX = 0; // マップドラッグ開始時のX座標
+let startDragY = 0; // マップドラッグ開始時のY座標
+let mapOffsetX = 0; // マップの現在のXオフセット
+let mapOffsetY = 0; // マップの現在のYオフセット
+let animationFrameId = null; // requestAnimationFrame のID
+
 /** マップの幅 */
-export const gridWidth = 50; // 48
+export const gridWidth = 40; // 48
 /** マップの高さ */
 export const gridHeight = 37; // 27
 
@@ -56,76 +63,128 @@ export function createGrid(formationGrid, width = gridWidth, height = gridHeight
  * @param {*} formationGrid 
  */
 function setupGridEventListeners(formationGrid) {
-    formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-        // 各セルをドラッグ可能にする
-        cell.setAttribute('draggable', 'true');
+    // グリッド全体のマウスイベントリスナーを設定
+    formationGrid.addEventListener('mousedown', (event) => {
+        // 左クリックのみでドラッグを許可
+        if (event.button !== 0) return;
 
-        // ドラッグ開始イベント
+        // クリックされた要素がキャラクターアイコンでない場合のみマップドラッグを開始
+        const clickedElement = event.target.closest('.grid-cell');
+        const characterElement = clickedElement ? clickedElement.querySelector('.character-icon') : null;
+
+        if (!characterElement) {
+            isDraggingMap = true;
+            startDragX = event.clientX - mapOffsetX;
+            startDragY = event.clientY - mapOffsetY;
+            formationGrid.style.cursor = 'grabbing'; // カーソルを変更
+            event.preventDefault(); // テキスト選択などを防ぐ
+        }
+    });
+
+    formationGrid.addEventListener('mousemove', (event) => {
+        if (isDraggingMap) {
+            // 新しいオフセットを計算
+            const newOffsetX = event.clientX - startDragX;
+            const newOffsetY = event.clientY - startDragY;
+
+            // オフセットが変更された場合のみ更新
+            if (newOffsetX !== mapOffsetX || newOffsetY !== mapOffsetY) {
+                mapOffsetX = newOffsetX;
+                mapOffsetY = newOffsetY;
+
+                // 既存のアニメーションフレームがあればキャンセル
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+
+                // 次のアニメーションフレームでDOMを更新
+                animationFrameId = requestAnimationFrame(() => {
+                    formationGrid.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+                });
+            }
+            event.preventDefault();
+        }
+    });
+
+    formationGrid.addEventListener('mouseup', () => {
+        if (isDraggingMap) {
+            isDraggingMap = false;
+            formationGrid.style.cursor = 'grab'; // カーソルを元に戻す
+            // ドラッグ終了時にアニメーションフレームをキャンセル
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+    });
+
+    // 各グリッドセルにイベントリスナーを設定
+    formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
+        // 各セルをドラッグ可能にする (キャラクタードラッグ用)
+        // キャラクターアイコン自体にdraggable属性を設定するため、セルからは削除
+        cell.removeAttribute('draggable');
+
+        // キャラクターのドラッグ開始イベント
+        // キャラクターアイコンに直接イベントリスナーを設定することを想定
+        // 現状のコードでは.character-iconが動的に追加されるため、イベント委譲を検討するか、
+        // キャラクター配置時にdraggable属性とイベントリスナーを設定する必要がある。
+        // ここでは既存のdragstartロジックを維持し、キャラクターアイコンがドラッグされた場合にのみ発火するようにする。
         cell.addEventListener('dragstart', (event) => {
-            // セルにキャラクター要素がある場合のみドラッグを許可
-            const characterElement = event.target.querySelector('.character-icon'); // .character-icon に修正
+            const characterElement = event.target.closest('.character-icon'); // closestで親要素も考慮
             if (characterElement) {
                 draggedCharacterElement = characterElement;
-                originalCell = event.target;
+                originalCell = characterElement.closest('.grid-cell'); // キャラクターアイコンの親セル
                 const originalX = parseInt(originalCell.dataset.x);
                 const originalY = parseInt(originalCell.dataset.y);
                 const cellKey = `${originalX}-${originalY}`;
-                draggedCharacterData = placedCharacters[cellKey]; // placedCharactersからキャラクターデータを取得
+                draggedCharacterData = placedCharacters[cellKey];
 
                 if (draggedCharacterData) {
-                    // ドラッグ中のキャラクターの情報をDataTransferオブジェクトに設定
                     event.dataTransfer.setData('text/plain', JSON.stringify(draggedCharacterData));
                     event.dataTransfer.effectAllowed = 'move';
-                    // ドラッグ中の要素にスタイルを適用（オプション）
-                    event.target.classList.add('dragging');
+                    originalCell.classList.add('dragging'); // 元のセルにスタイルを適用
                 } else {
-                    // データが見つからない場合はドラッグを無効にする
                     event.preventDefault();
                 }
             } else {
-                // キャラクターがいない場合はドラッグを無効にする
+                // キャラクターアイコン以外がドラッグされた場合はドラッグを無効にする
                 event.preventDefault();
             }
         });
 
-        // ドラッグオーバーイベント
+        // ドラッグオーバーイベント (キャラクタードラッグ用)
         cell.addEventListener('dragover', (event) => {
-            event.preventDefault(); // ドロップを許可するために必要
+            event.preventDefault();
             event.dataTransfer.dropEffect = 'move';
-            // ドロップ可能なセルにハイライト表示など（オプション）
         });
 
-        // ドロップイベント
+        // ドロップイベント (キャラクタードラッグ用)
         cell.addEventListener('drop', (event) => {
             event.preventDefault();
             if (draggedCharacterElement && originalCell && draggedCharacterData) {
-                const targetCell = event.target.closest('.grid-cell'); // ドロップ先のセルを取得
+                const targetCell = event.target.closest('.grid-cell');
                 if (targetCell && targetCell !== originalCell) {
                     const targetX = parseInt(targetCell.dataset.x);
                     const targetY = parseInt(targetCell.dataset.y);
                     const targetCellKey = `${targetX}-${targetY}`;
 
-                    // 侵入不可セルへの配置を禁止
                     if (mapData[targetY][targetX] & CELL_STATUS.UNWALKABLE) {
                         resultText.textContent = `(${targetX},${targetY})は侵入不可セルです。キャラクターを配置できません。`;
                         return;
                     }
 
-                    // ドロップ先のセルに既にキャラクターがいないか確認
-                    if (!placedCharacters[targetCellKey]) { // placedCharacters を参照
-                        // 元のセルからキャラクターを削除
+                    if (!placedCharacters[targetCellKey]) {
                         originalCell.removeChild(draggedCharacterElement);
                         originalCell.classList.remove('has-character');
                         originalCell.classList.remove(`${draggedCharacterData.type}-${draggedCharacterData.name}`);
                         const originalX = parseInt(originalCell.dataset.x);
                         const originalY = parseInt(originalCell.dataset.y);
-                        delete placedCharacters[`${originalX}-${originalY}`]; // placedCharacters から元のデータを削除
+                        delete placedCharacters[`${originalX}-${originalY}`];
 
-                        // 新しいセルにキャラクターを移動
                         targetCell.appendChild(draggedCharacterElement);
                         targetCell.classList.add('has-character');
                         targetCell.classList.add(`${draggedCharacterData.type}-${draggedCharacterData.name}`);
-                        placedCharacters[targetCellKey] = draggedCharacterData; // placedCharacters に新しいデータを追加
+                        placedCharacters[targetCellKey] = draggedCharacterData;
 
                         resultText.textContent = `キャラクターを(${originalX},${originalY})から(${targetX},${targetY})へ移動しました。`;
                     } else {
@@ -135,16 +194,14 @@ function setupGridEventListeners(formationGrid) {
             }
         });
 
-        // ドラッグ終了イベント
+        // ドラッグ終了イベント (キャラクタードラッグ用)
         cell.addEventListener('dragend', (event) => {
-            // ドラッグ中のスタイルを削除
             if (originalCell) {
                 originalCell.classList.remove('dragging');
             }
-            // 変数をリセット
             draggedCharacterElement = null;
             originalCell = null;
-            draggedCharacterData = null; // ドラッグ中のキャラクターデータもリセット
+            draggedCharacterData = null;
         });
 
         cell.addEventListener('click', (event) => {
