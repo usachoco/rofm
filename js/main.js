@@ -1,6 +1,6 @@
 import { createGrid, setupGridLinesCheckbox } from './grid.js';
 import { createCharacterButtons, createEnemyButtons } from './character.js';
-import { setupSkillButtons } from './skill.js';
+import { createSkillButtons } from './skill.js';
 import { simulateFormation, importFromUrl, initializeMapData, setupCopyURLButton } from './data.js';
 import { setupUI } from './ui.js';
 import { initializeMode } from './mode.js';
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUI(formationGrid, resultText);
     createCharacterButtons(formationGrid, resultText);
     createEnemyButtons(formationGrid, resultText);
-    setupSkillButtons(resultText, formationGrid);
+    createSkillButtons(formationGrid, resultText);
     setupGridLinesCheckbox(formationGrid);
     setupCopyURLButton(resultText);
     createGrid(formationGrid);

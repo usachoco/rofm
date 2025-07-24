@@ -1,9 +1,29 @@
-import { placedCharacters, mapData, CELL_STATUS } from './data.js';
+import { placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST } from './data.js';
 import { gridWidth, gridHeight } from './grid.js';
 import { clearSelectedCharacter } from './character.js';
 import { handleSkillSelectionModeChange } from './mode.js';
 
 export let selectedSkillSize = null; // 選択されたスキルの範囲 (3または5)
+
+
+/**
+ * スキル選択ボタンを動的に生成する
+ * @param {*} resultText 
+ * @param {*} formationGrid 
+ */
+export function createSkillButtons(formationGrid, resultText) {
+    // スキル選択ボタンを動的に生成
+    const skillSelectionDiv = document.querySelector('.skill-selection');
+    SKILL_RANGE_LIST.forEach(skill => {
+        const button = document.createElement('button');
+        button.classList.add('skill-btn');
+        button.dataset.skill = skill.id;
+        button.dataset.skillSize = skill.value;
+        button.textContent = skill.name;
+        skillSelectionDiv.appendChild(button);
+        setupSkillButtons(button, resultText, formationGrid)
+    });
+}
 
 /**
  * スキル選択ボタンにOnClickイベントハンドラを設定する
@@ -11,7 +31,7 @@ export let selectedSkillSize = null; // 選択されたスキルの範囲 (3ま�
  * @param {*} resultText 
  * @param {*} formationGrid 
  */
-export function setupSkillButtons(resultText, formationGrid) {
+function setupSkillButtons(button, resultText, formationGrid) {
     const skillButtons = document.querySelectorAll('.skill-btn');
     skillButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -22,7 +42,7 @@ export function setupSkillButtons(resultText, formationGrid) {
             // キャラクター選択を解除
             clearSelectedCharacter();
             handleSkillSelectionModeChange(); // モード切り替えロジックを呼び出す
-            resultText.textContent = `${selectedSkillSize}x${selectedSkillSize}スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
+            resultText.textContent = `${button.textContent} スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
         });
     });
 }
@@ -84,7 +104,6 @@ export function clearSkillTrace(formationGrid) {
         cell.classList.remove('skill-highlight');
     });
 }
-
 
 /**
  * 設置位置が確定したスキルの影響範囲を可視化する
