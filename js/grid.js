@@ -116,20 +116,13 @@ function setupGridEventListeners(formationGrid) {
 
     // 各グリッドセルにイベントリスナーを設定
     formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-        // 各セルをドラッグ可能にする (キャラクタードラッグ用)
-        // キャラクターアイコン自体にdraggable属性を設定するため、セルからは削除
-        cell.removeAttribute('draggable');
+        cell.setAttribute('draggable', 'true');
 
-        // キャラクターのドラッグ開始イベント
-        // キャラクターアイコンに直接イベントリスナーを設定することを想定
-        // 現状のコードでは.character-iconが動的に追加されるため、イベント委譲を検討するか、
-        // キャラクター配置時にdraggable属性とイベントリスナーを設定する必要がある。
-        // ここでは既存のdragstartロジックを維持し、キャラクターアイコンがドラッグされた場合にのみ発火するようにする。
         cell.addEventListener('dragstart', (event) => {
-            const characterElement = event.target.closest('.character-icon'); // closestで親要素も考慮
+            const characterElement = event.target.querySelector('.character-icon');
             if (characterElement) {
                 draggedCharacterElement = characterElement;
-                originalCell = characterElement.closest('.grid-cell'); // キャラクターアイコンの親セル
+                originalCell = event.target;
                 const originalX = parseInt(originalCell.dataset.x);
                 const originalY = parseInt(originalCell.dataset.y);
                 const cellKey = `${originalX}-${originalY}`;
@@ -138,7 +131,7 @@ function setupGridEventListeners(formationGrid) {
                 if (draggedCharacterData) {
                     event.dataTransfer.setData('text/plain', JSON.stringify(draggedCharacterData));
                     event.dataTransfer.effectAllowed = 'move';
-                    originalCell.classList.add('dragging'); // 元のセルにスタイルを適用
+                    event.target.classList.add('dragging');
                 } else {
                     event.preventDefault();
                 }
