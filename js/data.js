@@ -1,4 +1,5 @@
 import { clearAndPlaceCharacters, clearAllCharacters } from './character.js';
+import { placeSkill } from './skill.js';
 import { MAP_LIST } from './mapdata/map01.js';
 import { createGrid } from './grid.js';
 
@@ -46,12 +47,12 @@ export const ENEMY_CHARACTERS = [
 
 /** 設置スキルの定義 */
 export const SKILL_RANGE_LIST = [
-    { id: 'BD_ROKISWEIL', name: 'ロキの叫び', value: 23, color: '#ff0000'},
-    { id: 'DC_UGLYDANCE', name: '自分勝手なダンス', value: 23, color: '#00ff00'},
-    { id: 'WM_SATURDAY_NIGHT_FEVER', name: 'フライデーナイトフィーバー', value: 23, color: '#0000ff'},
-    { id: 'WM_MELODYOFSINK', name: 'メロディーオブシンク', value: 23, color: '#ff00ff'},
-    { id: 'EM_LIGHTNING_LAND', name: 'ライトニングランド', value: 9, color: '#ff0000'},
-    { id: 'SA_LANDPROTECTOR', name: 'ランドプロテクター', value: 11, color: '#00ff00'},
+    { id: 'BD_ROKISWEIL', name: 'ロキの叫び', size: 23, color: '#ff0000'},
+    { id: 'DC_UGLYDANCE', name: '自分勝手なダンス', size: 23, color: '#00ff00'},
+    { id: 'WM_SATURDAY_NIGHT_FEVER', name: 'フライデーナイトフィーバー', size: 23, color: '#0000ff'},
+    { id: 'WM_MELODYOFSINK', name: 'メロディーオブシンク', size: 23, color: '#ff00ff'},
+    { id: 'EM_LIGHTNING_LAND', name: 'ライトニングランド', size: 9, color: '#ff0000'},
+    { id: 'SA_LANDPROTECTOR', name: 'ランドプロテクター', size: 11, color: '#00ff00'},
 ]
 
 /** マップデータを保持する変数  */
@@ -62,7 +63,7 @@ export let mapID = '';
 export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
 
 /** 設置スキルシンボルの配置情報が格納される配列 */
-export const placedSkills = {};
+export const placedSkills = {}; // { "x-y": { skillId: "skillId" } }
 
 /** 各セルに影響を与えているスキルIDのリストが格納されるマップ */
 export const cellSkillEffects = {}; // { "x-y": Set<string> }
@@ -200,15 +201,25 @@ export async function importFromUrl(formationGrid, resultText) {
             const allData = await decompressData(decodedData);
             const importedMapID = allData[0];
             const importedCharacters = allData[1];
+            const importedSkills = allData[2];
             initializeMapData(importedMapID);
             createGrid(formationGrid);
             clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
-            // TODO: スキルデータのインポート処理を書く
+            importAllSkillPlacements(importedSkills, formationGrid, resultText);
             resultText.textContent = 'URLから配置データをインポートしました。';
         } catch (e) {
             resultText.textContent = 'URLからのデータインポートに失敗しました。データが破損している可能性があります。';
             console.error('URL import error:', e);
         }
+    }
+}
+
+function importAllSkillPlacements(skills, formationGrid, resultText) {
+    for (const key in skills) {
+        const [x, y] = key.split('-');
+        const skillId = skills[key].skillId;
+        const skillData = SKILL_RANGE_LIST.find(s => s.id === skillId);
+        placeSkill(skillData, parseInt(x), parseInt(y), formationGrid, resultText);
     }
 }
 

@@ -1,10 +1,11 @@
-import { gridWidth, gridHeight, placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST, cellSkillEffects } from './data.js'; // cellSkillEffects をインポート
+import { gridWidth, gridHeight, placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST, cellSkillEffects, placedSkills } from './data.js'; // cellSkillEffects をインポート
 import { updateCellSkillOverlay } from './grid.js'; // updateCellSkillOverlay をインポート
 import { clearSelectedCharacter } from './character.js';
 import { handleSkillSelectionModeChange } from './mode.js';
 
 export let selectedSkill = null; // 選択されたスキルオブジェクト (id, value, color を含む)
 let tempSkillAffectedCells = []; // 一時的なスキル影響範囲のセルを追跡
+
 
 export const TEMP_SKILL_ID = 'TEMP_SKILL'; // 一時的なスキルID
 
@@ -20,7 +21,7 @@ export function createSkillButtons(formationGrid, resultText) {
         const button = document.createElement('button');
         button.classList.add('skill-btn');
         button.dataset.skillId = skill.id; // skillId をデータ属性に追加
-        button.dataset.skillSize = skill.value;
+        button.dataset.skillSize = skill.size;
         button.textContent = skill.name;
         skillSelectionDiv.appendChild(button);
         setupSkillButtons(button, resultText, formationGrid)
@@ -119,26 +120,33 @@ export function clearAllSkillEffects(formationGrid) { // 関数名を変更
         }
         delete cellSkillEffects[key]; // マップからエントリを削除
     }
+    for (const key in placedSkills) {
+        delete placedSkills[key]; // マップからエントリを削除
+    }
 }
 
 /**
  * 設置位置が確定したスキルの影響範囲を可視化する
- * @param {*} cell 設置先セル
+ * @param {*} skill 設置するスキル
  * @param {*} x 設置先セルのx座標
  * @param {*} y 設置先セルのy座標
  * @param {*} formationGrid
  * @param {*} resultText 
  */
-export function activateSkill(cell, x, y, formationGrid, resultText) {
+export function placeSkill(skill, x, y, formationGrid, resultText) {
     hideTemporarySkillEffectRange(formationGrid);
-    const affectedCells = getSkillAffectedCells(x, y, selectedSkill.size);
+    // スキルの発動点を保存
+    const cellKey = `${x}-${y}`;
+    placedSkills[cellKey] = { skillId: skill.id };
+    // スキルの効果範囲を描画
+    const affectedCells = getSkillAffectedCells(x, y, skill.size);
     let affectedCharacters = [];
     affectedCells.forEach(coord => {
         const key = `${coord.x}-${coord.y}`;
         if (!cellSkillEffects[key]) {
             cellSkillEffects[key] = new Set();
         }
-        cellSkillEffects[key].add(selectedSkill.id); // 確定したスキルIDを追加
+        cellSkillEffects[key].add(skill.id); // 確定したスキルIDを追加
         const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
         if (affectedCellElement) {
             updateCellSkillOverlay(affectedCellElement, coord.x, coord.y); // 背景色を更新
@@ -149,9 +157,9 @@ export function activateSkill(cell, x, y, formationGrid, resultText) {
     });
     if (affectedCharacters.length > 0) {
         const charNames = affectedCharacters.map(char => `${char.name}(${char.type === 'ally' ? '味方' : '敵'})`).join(', ');
-        resultText.textContent = `(${x},${y})に${selectedSkill.size}x${selectedSkill.size}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
+        resultText.textContent = `(${x},${y})に${skill.size}x${skill.size}スキルを発動！\n影響を受けるキャラクター: ${charNames}`;
     } else {
-        resultText.textContent = `(${x},${y})に${selectedSkill.size}x${selectedSkill.size}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
+        resultText.textContent = `(${x},${y})に${skill.size}x${skill.size}スキルを発動しましたが、影響を受けるキャラクターはいません。`;
     }
     clearSelectedSkill();
 }

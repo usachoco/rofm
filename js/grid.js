@@ -1,7 +1,7 @@
 import { showContextMenu } from './ui.js';
 import { mapData, CELL_STATUS, placedCharacters, cellSkillEffects, SKILL_RANGE_LIST, gridWidth, gridHeight } from './data.js'; // cellSkillEffects, SKILL_RANGE_LIST をインポート
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
-import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill, TEMP_SKILL_ID } from './skill.js';
+import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, placeSkill, TEMP_SKILL_ID } from './skill.js';
 import { getIsLineOfSightMode, getFixedLineOfSightTarget, setFixedLineOfSightTarget, applyLineOfSightHighlight, handleLineOfSightMouseOver, clearLineOfSightHighlights } from './mode.js';
 
 let draggedCharacterElement = null; // ドラッグ中のキャラクター要素
@@ -208,7 +208,7 @@ function setupGridEventListeners(formationGrid) {
                 placeCharacter(event.target, x, y, enableCollisionCheckbox, resultText);
             } else if (selectedSkill) { // selectedSkillSize の代わりに selectedSkill を使用
                 // スキル設置モード
-                activateSkill(event.target, x, y, formationGrid, resultText);
+                placeSkill(selectedSkill, x, y, formationGrid, resultText);
                 clearLineOfSightHighlights(); // スキル発動後に射線ハイライトをクリア
             } else if (getIsLineOfSightMode()) {
                 // 射程設置モード
