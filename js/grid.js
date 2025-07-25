@@ -1,7 +1,7 @@
 import { showContextMenu } from './ui.js';
 import { mapData, CELL_STATUS, placedCharacters, cellSkillEffects, SKILL_RANGE_LIST, gridWidth, gridHeight } from './data.js'; // cellSkillEffects, SKILL_RANGE_LIST をインポート
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
-import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill } from './skill.js';
+import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, activateSkill, TEMP_SKILL_ID } from './skill.js';
 import { getIsLineOfSightMode, getFixedLineOfSightTarget, setFixedLineOfSightTarget, applyLineOfSightHighlight, handleLineOfSightMouseOver, clearLineOfSightHighlights } from './mode.js';
 
 let draggedCharacterElement = null; // ドラッグ中のキャラクター要素
@@ -317,6 +317,10 @@ export function updateCellSkillOverlay(cellElement, x, y) {
             if (skill && skill.color) {
                 // 半透明の色を生成 (例: 50% 透明度)
                 const color = hexToRgba(skill.color, 0.25);
+                gradients.push(`linear-gradient(${color}, ${color})`);
+            } else if (skillId === TEMP_SKILL_ID) {
+                // スキル設置位置移動中の色を生成
+                const color = hexToRgba('#ffff00', 0.25);
                 gradients.push(`linear-gradient(${color}, ${color})`);
             }
         });

@@ -6,6 +6,8 @@ import { handleSkillSelectionModeChange } from './mode.js';
 export let selectedSkill = null; // 選択されたスキルオブジェクト (id, value, color を含む)
 let tempSkillAffectedCells = []; // 一時的なスキル影響範囲のセルを追跡
 
+export const TEMP_SKILL_ID = 'TEMP_SKILL'; // 一時的なスキルID
+
 /**
  * スキル選択ボタンを動的に生成する
  * @param {*} resultText 
@@ -60,31 +62,18 @@ function setupSkillButtons(button, resultText, formationGrid) {
  * @param {*} formationGrid 
  */
 export function showTemporarySkillEffectRange(event, formationGrid) {
+    hideTemporarySkillEffectRange(formationGrid);
     if (selectedSkill) {
-        // 既存の一時的なスキル効果をクリア
-        tempSkillAffectedCells.forEach(coord => {
-            const key = `${coord.x}-${coord.y}`;
-            if (cellSkillEffects[key]) {
-                cellSkillEffects[key].delete(selectedSkill.id);
-                const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
-                if (targetCell) {
-                    updateCellSkillOverlay(targetCell, coord.x, coord.y);
-                }
-            }
-        });
-        tempSkillAffectedCells = []; // リセット
-
         const cell = event.target;
         const centerX = parseInt(cell.dataset.x);
         const centerY = parseInt(cell.dataset.y);
         const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkill.size);
-        
         affectedCells.forEach(coord => {
             const key = `${coord.x}-${coord.y}`;
             if (!cellSkillEffects[key]) {
                 cellSkillEffects[key] = new Set();
             }
-            cellSkillEffects[key].add(selectedSkill.id);
+            cellSkillEffects[key].add(TEMP_SKILL_ID);
             const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
             if (targetCell) {
                 updateCellSkillOverlay(targetCell, coord.x, coord.y);
@@ -105,7 +94,7 @@ export function hideTemporarySkillEffectRange(formationGrid) {
         tempSkillAffectedCells.forEach(coord => {
             const key = `${coord.x}-${coord.y}`;
             if (cellSkillEffects[key]) {
-                cellSkillEffects[key].delete(selectedSkill.id);
+                cellSkillEffects[key].delete(TEMP_SKILL_ID);
                 const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
                 if (targetCell) {
                     updateCellSkillOverlay(targetCell, coord.x, coord.y);
@@ -141,19 +130,7 @@ export function clearAllSkillEffects(formationGrid) { // 関数名を変更
  * @param {*} resultText 
  */
 export function activateSkill(cell, x, y, formationGrid, resultText) {
-    // 一時的なハイライトをクリア（マウスアウト時と同じロジック）
-    tempSkillAffectedCells.forEach(coord => {
-        const key = `${coord.x}-${coord.y}`;
-        if (cellSkillEffects[key]) {
-            cellSkillEffects[key].delete(selectedSkill.id);
-            const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
-            if (targetCell) {
-                updateCellSkillOverlay(targetCell, coord.x, coord.y);
-            }
-        }
-    });
-    tempSkillAffectedCells = []; // リセット
-
+    hideTemporarySkillEffectRange(formationGrid);
     const affectedCells = getSkillAffectedCells(x, y, selectedSkill.size);
     let affectedCharacters = [];
     affectedCells.forEach(coord => {
