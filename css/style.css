@@ -274,6 +274,7 @@ main {
 
 .character-icon {
     pointer-events: none; /* クリックイベントを透過させる */
+    user-select: none;  /* テキスト選択を禁止する */
 }
 
 /* キャラクターごとの背景色は削除し、汎用的なスタイルを使用 */
