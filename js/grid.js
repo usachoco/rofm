@@ -331,20 +331,25 @@ function updateGridLines(formationGrid) {
  */
 export function updateCellSkillOverlay(cellElement, x, y) {
     const key = `${x}-${y}`;
-    const activeSkillIds = cellSkillEffects[key];
+    const activeSkillCounts = cellSkillEffects.get(key);
     const tooltipElement = cellElement.querySelector('.skill-tooltip');
 
     // 背景色の更新
-    if (activeSkillIds && activeSkillIds.size > 0) {
+    if (activeSkillCounts && activeSkillCounts.size > 0) {
         const gradients = [];
-        activeSkillIds.forEach(skillId => {
+        activeSkillCounts.forEach((count, skillId) => {
             const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
+            let color;
             if (skill && skill.color) {
-                const color = hexToRgba(skill.color, 0.25);
-                gradients.push(`linear-gradient(${color}, ${color})`);
+                color = hexToRgba(skill.color, 0.25);
             } else if (skillId === TEMP_SKILL_ID) {
-                const color = hexToRgba('#ffff00', 0.25);
-                gradients.push(`linear-gradient(${color}, ${color})`);
+                color = hexToRgba('#ffff00', 0.25);
+            }
+            // スキルが複数回影響を与えている場合、その回数分グラデーションを追加
+            for (let i = 0; i < count; i++) {
+                if (color) {
+                    gradients.push(`linear-gradient(${color}, ${color})`);
+                }
             }
         });
         cellElement.style.backgroundImage = gradients.join(', ');

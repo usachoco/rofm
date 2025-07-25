@@ -71,10 +71,12 @@ export function showTemporarySkillEffectRange(event, formationGrid) {
         const affectedCells = getSkillAffectedCells(centerX, centerY, selectedSkill.size);
         affectedCells.forEach(coord => {
             const key = `${coord.x}-${coord.y}`;
-            if (!cellSkillEffects[key]) {
-                cellSkillEffects[key] = new Set();
+            if (!cellSkillEffects.has(key)) {
+                cellSkillEffects.set(key, new Map());
             }
-            cellSkillEffects[key].add(TEMP_SKILL_ID);
+            const skillCounts = cellSkillEffects.get(key);
+            skillCounts.set(TEMP_SKILL_ID, (skillCounts.get(TEMP_SKILL_ID) || 0) + 1); // カウントをインクリメント
+
             const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
             if (targetCell) {
                 updateCellSkillOverlay(targetCell, coord.x, coord.y);
@@ -94,8 +96,19 @@ export function hideTemporarySkillEffectRange(formationGrid) {
     if (selectedSkill) {
         tempSkillAffectedCells.forEach(coord => {
             const key = `${coord.x}-${coord.y}`;
-            if (cellSkillEffects[key]) {
-                cellSkillEffects[key].delete(TEMP_SKILL_ID);
+            if (cellSkillEffects.has(key)) {
+                const skillCounts = cellSkillEffects.get(key);
+                const currentCount = skillCounts.get(TEMP_SKILL_ID) || 0;
+                if (currentCount > 1) {
+                    skillCounts.set(TEMP_SKILL_ID, currentCount - 1); // カウントをデクリメント
+                } else {
+                    skillCounts.delete(TEMP_SKILL_ID); // カウントが0になったら削除
+                }
+
+                if (skillCounts.size === 0) {
+                    cellSkillEffects.delete(key); // そのセルにスキル効果がなくなったらエントリを削除
+                }
+
                 const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
                 if (targetCell) {
                     updateCellSkillOverlay(targetCell, coord.x, coord.y);
@@ -151,10 +164,12 @@ export function placeSkill(skill, x, y, formationGrid, resultText) {
     let affectedCharacters = [];
     affectedCells.forEach(coord => {
         const key = `${coord.x}-${coord.y}`;
-        if (!cellSkillEffects[key]) {
-            cellSkillEffects[key] = new Set();
+        if (!cellSkillEffects.has(key)) {
+            cellSkillEffects.set(key, new Map());
         }
-        cellSkillEffects[key].add(skill.id); // 確定したスキルIDを追加
+        const skillCounts = cellSkillEffects.get(key);
+        skillCounts.set(skill.id, (skillCounts.get(skill.id) || 0) + 1); // カウントをインクリメント
+
         const affectedCellElement = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
         if (affectedCellElement) {
             updateCellSkillOverlay(affectedCellElement, coord.x, coord.y); // 背景色を更新
@@ -198,8 +213,19 @@ export function deleteSkill(x, y, formationGrid, resultText) {
         const affectedCells = getSkillAffectedCells(x, y, SKILL_RANGE_LIST.find(s => s.id === skillToDelete.skillId).size);
         affectedCells.forEach(coord => {
             const key = `${coord.x}-${coord.y}`;
-            if (cellSkillEffects[key]) {
-                cellSkillEffects[key].delete(skillToDelete.skillId);
+            if (cellSkillEffects.has(key)) {
+                const skillCounts = cellSkillEffects.get(key);
+                const currentCount = skillCounts.get(skillToDelete.skillId) || 0;
+                if (currentCount > 1) {
+                    skillCounts.set(skillToDelete.skillId, currentCount - 1); // カウントをデクリメント
+                } else {
+                    skillCounts.delete(skillToDelete.skillId); // カウントが0になったら削除
+                }
+
+                if (skillCounts.size === 0) {
+                    cellSkillEffects.delete(key); // そのセルにスキル効果がなくなったらエントリを削除
+                }
+
                 const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
                 if (targetCell) {
                     updateCellSkillOverlay(targetCell, coord.x, coord.y);

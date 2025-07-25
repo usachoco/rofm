@@ -65,8 +65,8 @@ export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "
 /** 設置スキルシンボルの配置情報が格納される配列 */
 export const placedSkills = {}; // { "x-y": { skillId: "skillId" } }
 
-/** 各セルに影響を与えているスキルIDのリストが格納されるマップ */
-export const cellSkillEffects = {}; // { "x-y": Set<string> }
+/** 各セルに影響を与えているスキルIDと、そのスキルが影響を与えている回数が格納されるマップ */
+export const cellSkillEffects = new Map(); // Map<string, Map<string, number>> { "x-y": Map<"skillId", count> }
 
 /**
  * マップ選択ボタンを動的に生成する
@@ -129,9 +129,7 @@ export function initializeMapData(id) {
  * セルスキル効果マップを初期化またはリセットする
  */
 export function initializeCellSkillEffects() {
-    for (const key in cellSkillEffects) {
-        delete cellSkillEffects[key];
-    }
+    cellSkillEffects.clear();
 }
 
 /**
