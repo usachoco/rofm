@@ -183,6 +183,46 @@ export function clearSelectedSkill() {
 }
 
 /**
+ * 指定された座標のスキルを削除する
+ * @param {number} x - スキルのX座標
+ * @param {number} y - スキルのY座標
+ * @param {HTMLElement} formationGrid - グリッド要素
+ * @param {HTMLElement} resultText - 結果表示要素
+ */
+export function deleteSkill(x, y, formationGrid, resultText) {
+    const cellKey = `${x}-${y}`;
+    const skillToDelete = placedSkills[cellKey];
+
+    if (skillToDelete) {
+        // スキルの影響範囲をクリア
+        const affectedCells = getSkillAffectedCells(x, y, SKILL_RANGE_LIST.find(s => s.id === skillToDelete.skillId).size);
+        affectedCells.forEach(coord => {
+            const key = `${coord.x}-${coord.y}`;
+            if (cellSkillEffects[key]) {
+                cellSkillEffects[key].delete(skillToDelete.skillId);
+                const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+                if (targetCell) {
+                    updateCellSkillOverlay(targetCell, coord.x, coord.y);
+                }
+            }
+        });
+
+        // placedSkills からスキルを削除
+        delete placedSkills[cellKey];
+
+        // 発動点セルのハイライトとツールチップを更新
+        const originCellElement = formationGrid.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        if (originCellElement) {
+            updateCellSkillOverlay(originCellElement, x, y);
+        }
+
+        resultText.textContent = `(${x},${y})のスキルを削除しました。`;
+    } else {
+        resultText.textContent = `(${x},${y})にスキルは存在しません。`;
+    }
+}
+
+/**
  * 指定されたセルを中心とした四角形の効果範囲セル座標の配列を返す.
  * この関数では障害物の存在が考慮されない.
  * @param {*} centerX 

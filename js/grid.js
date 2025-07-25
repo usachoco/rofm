@@ -232,8 +232,11 @@ function setupGridEventListeners(formationGrid) {
             const y = parseInt(event.target.dataset.y);
             const cellKey = `${x}-${y}`;
             if (placedCharacters[cellKey]) {
-                // キャラクターが存在する場合のみコンテキストメニューを表示
-                showContextMenu(event.clientX, event.clientY, x, y);
+                // キャラクターが存在する場合
+                showContextMenu(event.clientX, event.clientY, x, y, 'character', formationGrid, resultText);
+            } else if (placedSkills[cellKey]) {
+                // スキルが存在する場合
+                showContextMenu(event.clientX, event.clientY, x, y, 'skill', formationGrid, resultText);
             }
         });
 
