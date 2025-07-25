@@ -258,6 +258,7 @@ main {
     /* transition: background-color 0.1s; */ /* background-image に変更するためコメントアウト */
     background-color: transparent; /* デフォルトの背景色を透明に */
     transition: background-image 0.1s ease-out; /* スムーズなトランジション */
+    position: relative; /* ツールチップの基準位置とするため追加 */
 }
 
 .grid-cell:hover {
@@ -455,4 +456,28 @@ footer {
 .map-btn.selected {
     background-color: #17a2b8; /* シアン */
     color: white;
+}
+
+/* スキルツールチップのスタイル */
+.skill-tooltip {
+    position: absolute;
+    top: 0; /* セルの上端に密着 */
+    left: 50%;
+    transform: translateY(-100%) translateX(-50%); /* ツールチップ自体の高さ分上に移動し、中央に配置 */
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    z-index: 999; /* キャラクターアイコンより手前に表示 */
+    pointer-events: none; /* ツールチップ自体がイベントをブロックしないようにする */
+}
+
+/* スキル発動点のハイライトスタイル */
+.grid-cell.skill-origin-highlight {
+    box-shadow: inset 0 0 0 2px red; /* 赤い枠線 */
 }

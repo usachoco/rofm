@@ -121,6 +121,14 @@ export function clearAllSkillEffects(formationGrid) { // 関数名を変更
         delete cellSkillEffects[key]; // マップからエントリを削除
     }
     for (const key in placedSkills) {
+        // 発動点となるセルのツールチップをクリアするために updateCellSkillOverlay を呼び出す
+        const coords = key.split('-').map(Number);
+        const cellElement = formationGrid.querySelector(`[data-x="${coords[0]}"][data-y="${coords[1]}"]`);
+        if (cellElement) {
+            // placedSkills から削除する前に、updateCellSkillOverlay を呼び出すことで、
+            // placedSkills[key] が undefined になり、ツールチップが非表示になる
+            updateCellSkillOverlay(cellElement, coords[0], coords[1]);
+        }
         delete placedSkills[key]; // マップからエントリを削除
     }
 }
