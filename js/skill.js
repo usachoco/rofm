@@ -10,48 +10,40 @@ let tempSkillAffectedCells = []; // 一時的なスキル影響範囲のセル�
 export const TEMP_SKILL_ID = 'TEMP_SKILL'; // 一時的なスキルID
 
 /**
- * スキル選択ボタンを動的に生成する
+ * スキル選択ドロップダウンを動的に生成する
  * @param {*} resultText 
  * @param {*} formationGrid 
  */
-export function createSkillButtons(formationGrid, resultText) {
-    // スキル選択ボタンを動的に生成
-    const skillSelectionDiv = document.querySelector('.skill-selection');
+export function createSkillDropdown(formationGrid, resultText) {
+    const skillSelect = $('#skill-select'); // Select2を適用するためjQueryオブジェクトを取得
+    skillSelect.empty(); // 既存のオプションをクリア
+
+    // 初期オプションを追加
+    skillSelect.append(new Option('スキルを選択してください', '', true, true));
+
     SKILL_RANGE_LIST.forEach(skill => {
-        const button = document.createElement('button');
-        button.classList.add('skill-btn');
-        button.dataset.skillId = skill.id; // skillId をデータ属性に追加
-        button.dataset.skillSize = skill.size;
-        button.textContent = skill.name;
-        skillSelectionDiv.appendChild(button);
-        setupSkillButtons(button, resultText, formationGrid)
+        skillSelect.append(new Option(skill.name, skill.id));
     });
-}
 
-/**
- * スキル選択ボタンにOnClickイベントハンドラを設定する
- * @param {*} skillButtons 
- * @param {*} resultText 
- * @param {*} formationGrid 
- */
-function setupSkillButtons(button, resultText, formationGrid) {
-    const skillButtons = document.querySelectorAll('.skill-btn');
-    skillButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // 選択状態の切り替え
-            skillButtons.forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-            
-            const skillId = button.dataset.skillId;
-            const skillSize = parseInt(button.dataset.skillSize);
-            const skillColor = SKILL_RANGE_LIST.find(s => s.id === skillId).color; // 色を取得
-            selectedSkill = { id: skillId, size: skillSize, color: skillColor }; // selectedSkill を設定
+    skillSelect.select2({
+        placeholder: "スキルを選択してください",
+        allowClear: true // クリアボタンを表示
+    });
 
-            // キャラクター選択を解除
+    skillSelect.on('change', function() {
+        const selectedSkillId = $(this).val();
+        if (selectedSkillId) {
+            const skillData = SKILL_RANGE_LIST.find(s => s.id === selectedSkillId);
+            selectedSkill = { id: skillData.id, size: skillData.size, color: skillData.color };
+
             clearSelectedCharacter();
-            handleSkillSelectionModeChange(); // モード切り替えロジックを呼び出す
-            resultText.textContent = `${button.textContent} スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
-        });
+            handleSkillSelectionModeChange();
+            resultText.textContent = `${skillData.name} スキルが選択されました。グリッドにマウスオーバーして範囲を確認し、クリックして発動してください。`;
+        } else {
+            // スキルが選択されていない状態（クリアされた場合など）の処理
+            clearSelectedSkill();
+            resultText.textContent = 'スキル選択が解除されました。';
+        }
     });
 }
 
@@ -193,7 +185,7 @@ export function placeSkill(skill, x, y, formationGrid, resultText) {
  * - クリックした位置にスキル影響範囲が描画される
  */
 export function clearSelectedSkill() {
-    document.querySelectorAll('.skill-btn').forEach(btn => btn.classList.remove('selected'));
+    //$('#skill-select').val(null).trigger('change'); // Select2の選択を解除
     selectedSkill = null; // selectedSkill を null にリセット
 }
 

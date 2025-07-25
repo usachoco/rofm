@@ -69,49 +69,52 @@ export const placedSkills = {}; // { "x-y": { skillId: "skillId" } }
 export const cellSkillEffects = new Map(); // Map<string, Map<string, number>> { "x-y": Map<"skillId", count> }
 
 /**
- * マップ選択ボタンを動的に生成する
+ * マップ選択ドロップダウンを動的に生成する
  * @param {*} resultText 
  * @param {*} formationGrid 
  */
-export function createMapButtons(formationGrid, resultText) {
-    // マップ選択ボタンを動的に生成
-    const mapSelectionDiv = document.querySelector('.map-selection');
+export function createMapDropdown(formationGrid, resultText) {
+    const mapSelect = $('#map-select'); // Select2を適用するためjQueryオブジェクトを取得
+    mapSelect.empty(); // 既存のオプションをクリア
+
+    // 初期オプションを追加
+    mapSelect.append(new Option('マップを選択してください', '', true, true));
+
     MAP_LIST.forEach(map => {
-        const button = document.createElement('button');
-        button.classList.add('map-btn');
-        button.dataset.map = map.id;
-        button.textContent = map.name;
-        mapSelectionDiv.appendChild(button);
-        setupMapButton(button, resultText, formationGrid)
+        mapSelect.append(new Option(map.name, map.id));
+    });
+
+    mapSelect.select2({
+        placeholder: "マップを選択してください",
+        allowClear: true // クリアボタンを表示
+    });
+
+    mapSelect.on('change', function() {
+        const selectedMapId = $(this).val();
+        if (selectedMapId) {
+            clearAllCharacters(formationGrid);
+            initializeMapData(selectedMapId);
+            createGrid(formationGrid);
+            resultText.textContent = `${$(this).find('option:selected').text()} が選択されました。`;
+        } else {
+            // マップが選択されていない状態（クリアされた場合など）の処理
+            resultText.textContent = 'マップが選択されていません。';
+            // 必要に応じてグリッドをクリアしたり、初期状態に戻したりする
+            clearAllCharacters(formationGrid);
+            mapID = ''; // マップIDをリセット
+            mapData = []; // マップデータをリセット
+            gridWidth = 0; // グリッドサイズをリセット
+            gridHeight = 0;
+            createGrid(formationGrid); // 空のグリッドを再生成
+        }
     });
 }
 
 /**
- * マップ設定ボタンにイベントリスナーを設定する
- * @param {*} button
- * @param {*} skillButtons 
- * @param {*} resultText 
- * @param {*} formationGrid 
- */
-function setupMapButton(button, resultText, formationGrid) {
-    button.addEventListener('click', () => {
-        const mapButtons = document.querySelectorAll('.map-btn');
-        // キャラクタ配置初期化
-        clearAllCharacters(formationGrid);
-        // マップ読み込み
-        initializeMapData(button.dataset.map);
-        createGrid(formationGrid);
-        resultText.textContent = `${button.textContent} が選択されました。`;
-        mapButtons.forEach(btn => btn.classList.remove('selected'));  // 一旦すべてのボタンを非選択にしてから
-        button.classList.add('selected');   // このボタンだけ選択する
-    });
-}
-
-/**
- * マップボタンの選択状態を解除する
+ * マップの選択状態を解除する (ドロップダウンでは不要だが、既存の呼び出し元のために残す)
  */
 export function clearSelectedMap() {
-    document.querySelectorAll('.map-btn').forEach(btn => btn.classList.remove('selected'));
+    $('#map-select').val(null).trigger('change');
 }
 
 /**
