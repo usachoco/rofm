@@ -264,7 +264,7 @@ function getLineOfSightCells(start, end) {
     while (true) {
         // 障害物判定は独自処理
         const cellStatus = mapData[y0][x0];
-        if (cellStatus & CELL_STATUS.OBSTACLE === CELL_STATUS.OBSTACLE) {
+        if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
             return [];
         }
         cells.push({ x:x0, y:y0 });
