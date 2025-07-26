@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUI(formationGrid, resultText);
     createMapDropdown(formationGrid, resultText); // createMapButtons を createMapDropdown に変更
     createCharacterButtons(formationGrid, resultText);
-    createEnemyButtons(formationGrid, resultText);
+    // createEnemyButtons(formationGrid, resultText);
     createSkillDropdown(formationGrid, resultText); // createSkillButtons を createSkillDropdown に変更
     setupGridLinesCheckbox(formationGrid);
     setupCopyURLButton(resultText);

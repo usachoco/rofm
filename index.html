@@ -29,20 +29,20 @@
             <h2 class="collapsible-header">キャラクター選択</h2>
             <div class="collapsible-content character-selection">
             </div>
-            <h2 class="collapsible-header">敵キャラクター選択</h2>
-            <div class="collapsible-content enemy-selection">
-            </div>
-            <h2 class="collapsible-header">設定</h2>
-            <div class="collapsible-content settings">
-                <label><input type="checkbox" id="show-grid-lines" checked> グリッド線を表示</label>
-                <label><input type="checkbox" id="enable-collision" checked> 衝突判定を有効にする</label>
-            </div>
+
             <h2 class="collapsible-header">射線シミュレーション</h2>
             <div class="collapsible-content line-of-sight-simulation">
                 <label for="range-input">射程距離 (セル):</label>
                 <input type="number" id="range-input" value="9" min="1" max="50">
                 <button id="toggle-line-of-sight-mode">射線可視化モード</button>
             </div>
+
+            <h2 class="collapsible-header">設定</h2>
+            <div class="collapsible-content settings">
+                <label><input type="checkbox" id="show-grid-lines" checked> グリッド線を表示</label>
+                <label><input type="checkbox" id="enable-collision" checked> 衝突判定を有効にする</label>
+            </div>
+
             <button id="reset-formation">配置をリセット</button>
         </aside>
 
