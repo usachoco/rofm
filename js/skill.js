@@ -283,7 +283,8 @@ function getCircleRangeCells(centerX, centerY, radius) {
     for (let x = minX; x <= maxX; x++) {
         for (let y = minY; y <= maxY; y++) {
             // 各セルが円の内側にあるかどうかをチェック（中心からの距離が半径以下か）
-            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            let distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            distance = Math.floor(distance * 10) / 10;
             if (distance <= radius) {
                 affectedCells.push({x: x, y: y});
             }
