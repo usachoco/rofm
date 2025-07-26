@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROFM - Ragnarok Online Formation Maker</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     <header>
@@ -19,13 +16,15 @@
 
     <main>
         <aside class="sidebar">
-            <h2 class="collapsible-header">マップ</h2>
-            <div class="collapsible-content map-selection">
-                <select id="map-select" class="select2-dropdown" style="width: 100%;"></select>
+            <h2>マップ</h2>
+            <div class="map-selection">
+                <input list="map-list" id="map-select" name="map-select">
+                <datalist id="map-list"></datalist>
             </div>
-            <h2 class="collapsible-header">スキル</h2>
-            <div class="collapsible-content skill-selection">
-                <select id="skill-select" class="select2-dropdown" style="width: 100%;"></select>
+            <h2>スキル</h2>
+            <div class="skill-selection">
+                <input list="skill-list" id="skill-select" name="skill-select">
+                <datalist id="skill-list"></datalist>
             </div>
             <h2 class="collapsible-header">キャラクター選択</h2>
             <div class="collapsible-content character-selection">

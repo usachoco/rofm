@@ -15,23 +15,23 @@ export const TEMP_SKILL_ID = 'TEMP_SKILL'; // 一時的なスキルID
  * @param {*} formationGrid 
  */
 export function createSkillDropdown(formationGrid, resultText) {
-    const skillSelect = $('#skill-select'); // Select2を適用するためjQueryオブジェクトを取得
-    skillSelect.empty(); // 既存のオプションをクリア
-
-    // 初期オプションを追加
-    skillSelect.append(new Option('スキルを選択してください', '', true, true));
+    const skillInput = document.getElementById('skill-select');
+    const skillDatalist = document.getElementById('skill-list');
+    skillDatalist.innerHTML = ''; // 既存のオプションをクリア
 
     SKILL_RANGE_LIST.forEach(skill => {
-        skillSelect.append(new Option(skill.name, skill.id));
+        const option = document.createElement('option');
+        option.value = skill.name; // datalistのoptionのvalueは表示される値
+        option.dataset.id = skill.id; // 実際のIDはdata属性に保存
+        skillDatalist.appendChild(option);
     });
 
-    skillSelect.select2({
-        placeholder: "スキルを選択してください",
-        allowClear: true // クリアボタンを表示
-    });
+    skillInput.addEventListener('input', function() {
+        const selectedOption = Array.from(skillDatalist.options).find(
+            option => option.value === this.value
+        );
+        const selectedSkillId = selectedOption ? selectedOption.dataset.id : null;
 
-    skillSelect.on('change', function() {
-        const selectedSkillId = $(this).val();
         if (selectedSkillId) {
             const skillData = SKILL_RANGE_LIST.find(s => s.id === selectedSkillId);
             selectedSkill = { id: skillData.id, size: skillData.size, color: skillData.color };
@@ -185,7 +185,8 @@ export function placeSkill(skill, x, y, formationGrid, resultText) {
  * - クリックした位置にスキル影響範囲が描画される
  */
 export function clearSelectedSkill() {
-    //$('#skill-select').val(null).trigger('change'); // Select2の選択を解除
+    const skillInput = document.getElementById('skill-select');
+    skillInput.value = ''; // 選択を解除
     selectedSkill = null; // selectedSkill を null にリセット
 }
 

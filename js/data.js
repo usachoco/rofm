@@ -74,28 +74,28 @@ export const cellSkillEffects = new Map(); // Map<string, Map<string, number>> {
  * @param {*} formationGrid 
  */
 export function createMapDropdown(formationGrid, resultText) {
-    const mapSelect = $('#map-select'); // Select2を適用するためjQueryオブジェクトを取得
-    mapSelect.empty(); // 既存のオプションをクリア
-
-    // 初期オプションを追加
-    mapSelect.append(new Option('マップを選択してください', '', true, true));
+    const mapInput = document.getElementById('map-select');
+    const mapDatalist = document.getElementById('map-list');
+    mapDatalist.innerHTML = ''; // 既存のオプションをクリア
 
     MAP_LIST.forEach(map => {
-        mapSelect.append(new Option(map.name, map.id));
+        const option = document.createElement('option');
+        option.value = map.name; // datalistのoptionのvalueは表示される値
+        option.dataset.id = map.id; // 実際のIDはdata属性に保存
+        mapDatalist.appendChild(option);
     });
 
-    mapSelect.select2({
-        placeholder: "マップを選択してください",
-        allowClear: true // クリアボタンを表示
-    });
+    mapInput.addEventListener('input', function() {
+        const selectedOption = Array.from(mapDatalist.options).find(
+            option => option.value === this.value
+        );
+        const selectedMapId = selectedOption ? selectedOption.dataset.id : null;
 
-    mapSelect.on('change', function() {
-        const selectedMapId = $(this).val();
         if (selectedMapId) {
             clearAllCharacters(formationGrid);
             initializeMapData(selectedMapId);
             createGrid(formationGrid);
-            resultText.textContent = `${$(this).find('option:selected').text()} が選択されました。`;
+            resultText.textContent = `${this.value} が選択されました。`;
         } else {
             // マップが選択されていない状態（クリアされた場合など）の処理
             resultText.textContent = 'マップが選択されていません。';
@@ -108,13 +108,6 @@ export function createMapDropdown(formationGrid, resultText) {
             createGrid(formationGrid); // 空のグリッドを再生成
         }
     });
-}
-
-/**
- * マップの選択状態を解除する (ドロップダウンでは不要だが、既存の呼び出し元のために残す)
- */
-export function clearSelectedMap() {
-    $('#map-select').val(null).trigger('change');
 }
 
 /**
