@@ -175,7 +175,7 @@ export async function copyUrl(resultText) {
         placedSkills,
     ];
     const data = await compressData(allData);
-    const encodedData = uint8ToBase64(data); // Base64エンコード
+    const encodedData = encodeURIComponent(uint8ToBase64(data)); // Base64エンコードとURLエンコード
     const url = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
     navigator.clipboard.writeText(url).then(() => {
         resultText.textContent = '現在の配置を含むURLをクリップボードにコピーしました。';
@@ -195,7 +195,7 @@ export async function importFromUrl(formationGrid, resultText) {
     const encodedData = params.get('data');
     if (encodedData) {
         try {
-            const decodedData = base64ToUint8(encodedData); // Base64デコード
+            const decodedData = base64ToUint8(decodeURIComponent(encodedData)); // URLデコードとBase64デコード
             const allData = await decompressData(decodedData);
             const importedMapID = allData[0];
             const importedCharacters = allData[1];
