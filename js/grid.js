@@ -16,6 +16,7 @@ let mapOffsetY = 0; // マップの現在のYオフセット
 let animationFrameId = null; // requestAnimationFrame のID
 
 const enableCollisionCheckbox = document.getElementById('enable-collision');
+const showTooltipsCheckbox = document.getElementById('show-tooltips'); // 新しく追加
 const resultText = document.getElementById('result-text');
 
 /**
@@ -196,7 +197,11 @@ function setupGridEventListeners(formationGrid) {
         // ドラッグ終了イベント (キャラクタードラッグ用)
         cell.addEventListener('dragend', (event) => {
             if (originalCell) {
+                const originalX = parseInt(originalCell.dataset.x);
+                const originalY = parseInt(originalCell.dataset.y);
+                const cellKey = `${originalX}-${originalY}`;
                 originalCell.classList.remove('dragging');
+                updateCharacterTooltipsVisibility(originalCell, cellKey);
             }
             draggedCharacterElement = null;
             originalCell = null;
@@ -266,8 +271,10 @@ function setupGridEventListeners(formationGrid) {
             // キャラクターのメモツールチップの表示
             if (placedCharacters[cellKey] && placedCharacters[cellKey].memo && characterTooltipElement) {
                 characterTooltipElement.textContent = placedCharacters[cellKey].memo;
-                characterTooltipElement.style.opacity = '1';
-                characterTooltipElement.style.visibility = 'visible';
+                if (showTooltipsCheckbox.checked || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
+                    characterTooltipElement.style.opacity = '1';
+                    characterTooltipElement.style.visibility = 'visible';
+                }
             } else {
                 if (characterTooltipElement) {
                     characterTooltipElement.style.opacity = '0';
@@ -282,8 +289,10 @@ function setupGridEventListeners(formationGrid) {
                 const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
                 if (skill) {
                     skillTooltipElement.textContent = skill.name;
-                    skillTooltipElement.style.opacity = '1';
-                    skillTooltipElement.style.visibility = 'visible';
+                    if (showTooltipsCheckbox.checked || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
+                        skillTooltipElement.style.opacity = '1';
+                        skillTooltipElement.style.visibility = 'visible';
+                    }
                 }
             } else {
                 if (skillTooltipElement) {
@@ -309,15 +318,18 @@ function setupGridEventListeners(formationGrid) {
             }
 
             // マウスが外れたらツールチップを非表示
-            if (skillTooltipElement) {
-                skillTooltipElement.style.opacity = '0';
-                skillTooltipElement.style.visibility = 'hidden';
-                skillTooltipElement.textContent = '';
-            }
-            if (characterTooltipElement) {
-                characterTooltipElement.style.opacity = '0';
-                characterTooltipElement.style.visibility = 'hidden';
-                characterTooltipElement.textContent = '';
+            // showTooltipsCheckbox がチェックされていない場合のみ非表示にする
+            if (!showTooltipsCheckbox.checked) {
+                if (skillTooltipElement) {
+                    skillTooltipElement.style.opacity = '0';
+                    skillTooltipElement.style.visibility = 'hidden';
+                    skillTooltipElement.textContent = '';
+                }
+                if (characterTooltipElement) {
+                    characterTooltipElement.style.opacity = '0';
+                    characterTooltipElement.style.visibility = 'hidden';
+                    characterTooltipElement.textContent = '';
+                }
             }
         });
     });
@@ -341,6 +353,86 @@ export function setupGridLinesCheckbox(formationGrid) {
     showGridLinesCheckbox.addEventListener('change', () => 
         updateGridLines(formationGrid)
     );
+}
+
+/**
+ * ツールチップ表示チェックボックスにイベントリスナーを設定する
+ */
+export function setupTooltipsCheckbox() {
+    showTooltipsCheckbox.addEventListener('change', () => {
+        updateAllTooltipsVisibility();
+    });
+}
+
+/**
+ * キャラクターツールチップの可視化状態を更新する
+ * @param {*} cell 
+ * @param {*} cellKey 
+ */
+export function updateCharacterTooltipsVisibility(cell, cellKey) {
+    const showTooltips = showTooltipsCheckbox.checked;
+    const characterTooltipElement = cell.querySelector('.character-tooltip');
+    if (placedCharacters[cellKey] && placedCharacters[cellKey].memo && characterTooltipElement) {
+        characterTooltipElement.textContent = placedCharacters[cellKey].memo;
+        if (showTooltips) {
+            characterTooltipElement.style.opacity = '1';
+            characterTooltipElement.style.visibility = 'visible';
+        } else {
+            characterTooltipElement.style.opacity = '0';
+            characterTooltipElement.style.visibility = 'hidden';
+        }
+    } else {
+        if (characterTooltipElement) {
+            characterTooltipElement.style.opacity = '0';
+            characterTooltipElement.style.visibility = 'hidden';
+            characterTooltipElement.textContent = '';
+        }
+    }
+}
+
+/**
+ * スキルツールチップの可視化状態を更新する
+ * @param {*} cell 
+ * @param {*} cellKey 
+ */
+export function updateSkillTooltipsVisibility(cell, cellKey) {
+    const showTooltips = showTooltipsCheckbox.checked;
+    const skillTooltipElement = cell.querySelector('.skill-tooltip');
+    if (placedSkills[cellKey] && skillTooltipElement) {
+        const skillId = placedSkills[cellKey].skillId;
+        const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
+        if (skill) {
+            skillTooltipElement.textContent = skill.name;
+            if (showTooltips) {
+                skillTooltipElement.style.opacity = '1';
+                skillTooltipElement.style.visibility = 'visible';
+            } else {
+                skillTooltipElement.style.opacity = '0';
+                skillTooltipElement.style.visibility = 'hidden';
+            }
+        }
+    } else {
+        if (skillTooltipElement) {
+            skillTooltipElement.style.opacity = '0';
+            skillTooltipElement.style.visibility = 'hidden';
+            skillTooltipElement.textContent = '';
+        }
+    }
+}
+
+/**
+ * 全てのグリッドセルのツールチップ表示を更新する
+ */
+export function updateAllTooltipsVisibility() {
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
+        const cellKey = `${x}-${y}`;
+        // キャラクターツールチップの更新
+        updateCharacterTooltipsVisibility(cell, cellKey);
+        // スキルツールチップの更新
+        updateSkillTooltipsVisibility(cell, cellKey);
+    });
 }
 
 /**

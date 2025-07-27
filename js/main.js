@@ -1,4 +1,4 @@
-import { createGrid, setupGridLinesCheckbox } from './grid.js';
+import { createGrid, setupGridLinesCheckbox, setupTooltipsCheckbox } from './grid.js';
 import { createCharacterButtons, createEnemyButtons } from './character.js';
 import { createSkillDropdown } from './skill.js'; // createSkillButtons を createSkillDropdown に変更
 import { simulateFormation, importFromUrl, createMapDropdown, setupCopyURLButton } from './data.js'; // createMapButtons を createMapDropdown に変更
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // createEnemyButtons(formationGrid, resultText);
     createSkillDropdown(formationGrid, resultText); // createSkillButtons を createSkillDropdown に変更
     setupGridLinesCheckbox(formationGrid);
+    setupTooltipsCheckbox(); // 新しく追加
     setupCopyURLButton(resultText);
     importFromUrl(formationGrid, resultText);
     createGrid(formationGrid);

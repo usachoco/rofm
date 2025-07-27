@@ -1,6 +1,7 @@
 import { placedCharacters, simulateFormation, mapData, CELL_STATUS, ALLY_CHARACTERS, ENEMY_CHARACTERS } from './data.js';
 import { clearSelectedSkill } from './skill.js';
 import { handleCharacterSelectionModeChange } from './mode.js';
+import { updateCharacterTooltipsVisibility } from './grid.js';
 
 export let selectedCharacter = null;
 export let selectedCharacterType = null; // 'ally' or 'enemy'
@@ -26,6 +27,7 @@ export function deleteCharacter(x, y, formationGrid, resultText) {
             cell.classList.remove('has-character');
             cell.classList.remove(`${characterData.type}-${characterData.name}`);
             delete placedCharacters[cellKey];
+            updateCharacterTooltipsVisibility(cell, cellKey);
             resultText.textContent = `(${x},${y}) の ${characterData.name} を削除しました。`;
             simulateFormation(resultText); // シミュレーションを再実行
         }

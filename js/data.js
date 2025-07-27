@@ -1,7 +1,7 @@
 import { clearAndPlaceCharacters, clearAllCharacters } from './character.js';
 import { placeSkill } from './skill.js';
 import { MAP_LIST } from './mapdata/map01.js';
-import { createGrid } from './grid.js';
+import { createGrid, updateAllTooltipsVisibility } from './grid.js';
 
 
 /** マップの幅 */
@@ -204,6 +204,7 @@ export async function importFromUrl(formationGrid, resultText) {
             createGrid(formationGrid);
             clearAndPlaceCharacters(importedCharacters, formationGrid, resultText);
             importAllSkillPlacements(importedSkills, formationGrid, resultText);
+            updateAllTooltipsVisibility();
             resultText.textContent = 'URLから配置データをインポートしました。';
         } catch (e) {
             resultText.textContent = 'URLからのデータインポートに失敗しました。データが破損している可能性があります。';

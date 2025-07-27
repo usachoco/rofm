@@ -1,5 +1,5 @@
 import { gridWidth, gridHeight, placedCharacters, mapData, CELL_STATUS, SKILL_RANGE_LIST, cellSkillEffects, placedSkills } from './data.js'; // cellSkillEffects をインポート
-import { updateCellSkillOverlay } from './grid.js'; // updateCellSkillOverlay をインポート
+import { updateCellSkillOverlay, updateSkillTooltipsVisibility } from './grid.js'; // updateCellSkillOverlay をインポート
 import { clearSelectedCharacter } from './character.js';
 import { handleSkillSelectionModeChange } from './mode.js';
 
@@ -150,7 +150,9 @@ export function placeSkill(skill, x, y, formationGrid, resultText) {
     hideTemporarySkillEffectRange(formationGrid);
     // スキルの発動点を保存
     const cellKey = `${x}-${y}`;
+    const targetCell = formationGrid.querySelector(`[data-x="${x}"][data-y="${y}"]`);
     placedSkills[cellKey] = { skillId: skill.id };
+    updateSkillTooltipsVisibility(targetCell, cellKey);
     // スキルの効果範囲を描画
     const affectedCells = getSkillAffectedCells(x, y, skill.size);
     let affectedCharacters = [];
@@ -232,6 +234,7 @@ export function deleteSkill(x, y, formationGrid, resultText) {
         // 発動点セルのハイライトとツールチップを更新
         const originCellElement = formationGrid.querySelector(`[data-x="${x}"][data-y="${y}"]`);
         if (originCellElement) {
+            updateSkillTooltipsVisibility(originCellElement, cellKey);
             updateCellSkillOverlay(originCellElement, x, y);
         }
 
