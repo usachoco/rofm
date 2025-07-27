@@ -33,15 +33,16 @@ export function initializeMode(gridElement, resultTextElement) {
         toggleLineOfSightModeButton.addEventListener('click', () => {
             isLineOfSightMode = !isLineOfSightMode;
             toggleLineOfSightModeButton.classList.toggle('selected', isLineOfSightMode);
+            toggleLineOfSightModeButton.textContent = isLineOfSightMode ? '射程可視化モード: ON' : '射程可視化モード: OFF';
             
             clearSelectedCharacter();
             clearLineOfSightHighlights();
             fixedLineOfSightTarget = null;
 
             if (isLineOfSightMode) {
-                resultText.textContent = `射線可視化モードが有効になりました。グリッドにマウスオーバーして射線と射程範囲を確認してください。`;
+                resultText.textContent = `射程可視化モードが有効になりました。グリッドにマウスオーバーして射程範囲を確認してください。`;
             } else {
-                resultText.textContent = '射線可視化モードが無効になりました。';
+                resultText.textContent = '射程可視化モードが無効になりました。';
             }
         });
     }
@@ -56,6 +57,7 @@ export function resetSelectionAndMode() {
     fixedLineOfSightTarget = null;
     if (toggleLineOfSightModeButton) {
         toggleLineOfSightModeButton.classList.remove('selected');
+        toggleLineOfSightModeButton.textContent = '射程可視化モード: OFF';
     }
 }
 
@@ -124,6 +126,7 @@ export function handleCharacterSelectionModeChange() {
     if (toggleLineOfSightModeButton) {
         // 射程範囲設置モードを解除する. ただし描画済みの射程範囲は削除しない
         toggleLineOfSightModeButton.classList.remove('selected');
+        toggleLineOfSightModeButton.textContent = '射程可視化モード: OFF';
     }
     fixedLineOfSightTarget = null;
 }
@@ -133,6 +136,7 @@ export function handleSkillSelectionModeChange() {
     isLineOfSightMode = false;
     if (toggleLineOfSightModeButton) {
         toggleLineOfSightModeButton.classList.remove('selected');
+        toggleLineOfSightModeButton.textContent = '射程可視化モード: OFF';
     }
     fixedLineOfSightTarget = null;
 }
