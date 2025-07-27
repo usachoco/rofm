@@ -60,7 +60,7 @@ export let mapData = [];
 export let mapID = '';
 
 /** キャラクターシンボルの配置情報が格納される配列 */
-export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy" } }
+export const placedCharacters = {}; // { "x-y": { name: "characterName", type: "ally/enemy", memo: "メモ内容" } }
 
 /** 設置スキルシンボルの配置情報が格納される配列 */
 export const placedSkills = {}; // { "x-y": { skillId: "skillId" } }
@@ -141,7 +141,11 @@ export function simulateFormation(resultText) {
     } else {
         for (const key in placedCharacters) {
             const char = placedCharacters[key];
-            simulationOutput += `${char.name}(${char.type === 'ally' ? '味方' : '敵'})@${key} `;
+            simulationOutput += `${char.name}(${char.type === 'ally' ? '味方' : '敵'})@${key}`;
+            if (char.memo) { // メモがあれば追加
+                simulationOutput += `[${char.memo}]`;
+            }
+            simulationOutput += ` `;
             if (char.type === 'ally') {
                 allyCount++;
             } else {
@@ -214,6 +218,19 @@ function importAllSkillPlacements(skills, formationGrid, resultText) {
         const skillId = skills[key].skillId;
         const skillData = SKILL_RANGE_LIST.find(s => s.id === skillId);
         placeSkill(skillData, parseInt(x), parseInt(y), formationGrid, resultText);
+    }
+}
+
+/**
+ * 指定された座標のキャラクターのメモを更新する
+ * @param {number} x - キャラクターのX座標
+ * @param {number} y - キャラクターのY座標
+ * @param {string} memo - 設定するメモ内容
+ */
+export function updateCharacterMemo(x, y, memo) {
+    const cellKey = `${x}-${y}`;
+    if (placedCharacters[cellKey]) {
+        placedCharacters[cellKey].memo = memo;
     }
 }
 

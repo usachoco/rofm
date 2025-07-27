@@ -189,6 +189,9 @@ export function clearAndPlaceCharacters(charactersToPlace, formationGrid, result
             cell.classList.add('has-character');
             cell.classList.add(`${char.type}-${char.name}`);
             placedCharacters[key] = { name: char.name, type: char.type };
+            if (char.memo) {
+                placedCharacters[key].memo = char.memo;
+            }
         }
     }
     simulateFormation(resultText);

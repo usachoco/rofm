@@ -499,6 +499,25 @@ datalist option:hover {
     background-color: #f0f0f0;
 }
 
+/* キャラクターツールチップのスタイル */
+.character-tooltip {
+    position: absolute;
+    top: 0; /* セルの上端に密着 */
+    left: 50%;
+    transform: translateY(-100%) translateX(-50%); /* ツールチップ自体の高さ分上に移動し、中央に配置 */
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    z-index: 999; /* キャラクターアイコンより手前に表示 */
+    pointer-events: none; /* ツールチップ自体がイベントをブロックしないようにする */
+}
+
 /* スキルツールチップのスタイル */
 .skill-tooltip {
     position: absolute;

@@ -1,5 +1,5 @@
 import { showContextMenu } from './ui.js';
-import { mapData, CELL_STATUS, placedCharacters, placedSkills, cellSkillEffects, SKILL_RANGE_LIST, gridWidth, gridHeight } from './data.js'; // cellSkillEffects, SKILL_RANGE_LIST をインポート
+import { mapData, CELL_STATUS, placedCharacters, placedSkills, cellSkillEffects, SKILL_RANGE_LIST, gridWidth, gridHeight } from './data.js';
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
 import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, placeSkill, TEMP_SKILL_ID } from './skill.js';
 import { getIsLineOfSightMode, getFixedLineOfSightTarget, setFixedLineOfSightTarget, applyLineOfSightHighlight, handleLineOfSightMouseOver, clearLineOfSightHighlights } from './mode.js';
@@ -45,10 +45,15 @@ export function createGrid(formationGrid) {
             if (cellStatus === CELL_STATUS.UNWALKABLE) {
                 cell.classList.add('softwall');
             }
-            // ツールチップ要素を追加
-            const tooltip = document.createElement('div');
-            tooltip.classList.add('skill-tooltip');
-            cell.appendChild(tooltip);
+            // スキルツールチップ要素を追加
+            const skillTooltip = document.createElement('div');
+            skillTooltip.classList.add('skill-tooltip');
+            cell.appendChild(skillTooltip);
+
+            // キャラクターツールチップ要素を追加
+            const characterTooltip = document.createElement('div');
+            characterTooltip.classList.add('character-tooltip');
+            cell.appendChild(characterTooltip);
 
             formationGrid.appendChild(cell);
             // セルが生成されたときにスキルオーバーレイを初期化
@@ -244,7 +249,8 @@ function setupGridEventListeners(formationGrid) {
             const x = parseInt(event.target.dataset.x);
             const y = parseInt(event.target.dataset.y);
             const cellKey = `${x}-${y}`;
-            const tooltipElement = event.target.querySelector('.skill-tooltip');
+            const skillTooltipElement = event.target.querySelector('.skill-tooltip');
+            const characterTooltipElement = event.target.querySelector('.character-tooltip');
 
             if (getIsLineOfSightMode()) {
                 if (selectedSkill) { // スキルが選択されている場合
@@ -257,17 +263,42 @@ function setupGridEventListeners(formationGrid) {
                 showTemporarySkillEffectRange(event, formationGrid);
             }
 
-            // スキルの発動点にマウスオーバーした場合のみツールチップを表示
-            if (placedSkills[cellKey] && tooltipElement) {
-                tooltipElement.style.opacity = '1';
-                tooltipElement.style.visibility = 'visible';
+            // キャラクターのメモツールチップの表示
+            if (placedCharacters[cellKey] && placedCharacters[cellKey].memo && characterTooltipElement) {
+                characterTooltipElement.textContent = placedCharacters[cellKey].memo;
+                characterTooltipElement.style.opacity = '1';
+                characterTooltipElement.style.visibility = 'visible';
+            } else {
+                if (characterTooltipElement) {
+                    characterTooltipElement.style.opacity = '0';
+                    characterTooltipElement.style.visibility = 'hidden';
+                    characterTooltipElement.textContent = '';
+                }
+            }
+
+            // スキルの発動点ツールチップの表示
+            if (placedSkills[cellKey] && skillTooltipElement) {
+                const skillId = placedSkills[cellKey].skillId;
+                const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
+                if (skill) {
+                    skillTooltipElement.textContent = skill.name;
+                    skillTooltipElement.style.opacity = '1';
+                    skillTooltipElement.style.visibility = 'visible';
+                }
+            } else {
+                if (skillTooltipElement) {
+                    skillTooltipElement.style.opacity = '0';
+                    skillTooltipElement.style.visibility = 'hidden';
+                    skillTooltipElement.textContent = '';
+                }
             }
         });
         cell.addEventListener('mouseout', (event) => {
             const x = parseInt(event.target.dataset.x);
             const y = parseInt(event.target.dataset.y);
             const cellKey = `${x}-${y}`;
-            const tooltipElement = event.target.querySelector('.skill-tooltip');
+            const skillTooltipElement = event.target.querySelector('.skill-tooltip');
+            const characterTooltipElement = event.target.querySelector('.character-tooltip');
 
             if (getIsLineOfSightMode()) {
                 if (!getFixedLineOfSightTarget()) { // 射線モードで固定ターゲットがない場合
@@ -277,10 +308,16 @@ function setupGridEventListeners(formationGrid) {
                 hideTemporarySkillEffectRange(formationGrid);
             }
 
-            // スキルの発動点からマウスが外れた場合のみツールチップを非表示
-            if (placedSkills[cellKey] && tooltipElement) {
-                tooltipElement.style.opacity = '0';
-                tooltipElement.style.visibility = 'hidden';
+            // マウスが外れたらツールチップを非表示
+            if (skillTooltipElement) {
+                skillTooltipElement.style.opacity = '0';
+                skillTooltipElement.style.visibility = 'hidden';
+                skillTooltipElement.textContent = '';
+            }
+            if (characterTooltipElement) {
+                characterTooltipElement.style.opacity = '0';
+                characterTooltipElement.style.visibility = 'hidden';
+                characterTooltipElement.textContent = '';
             }
         });
     });
@@ -332,7 +369,7 @@ function updateGridLines(formationGrid) {
 export function updateCellSkillOverlay(cellElement, x, y) {
     const key = `${x}-${y}`;
     const activeSkillCounts = cellSkillEffects.get(key);
-    const tooltipElement = cellElement.querySelector('.skill-tooltip');
+    const skillTooltipElement = cellElement.querySelector('.skill-tooltip'); // スキルツールチップ要素を取得
 
     // 背景色の更新
     if (activeSkillCounts && activeSkillCounts.size > 0) {
@@ -357,22 +394,11 @@ export function updateCellSkillOverlay(cellElement, x, y) {
         cellElement.style.backgroundImage = 'none';
     }
 
-    // ツールチップのテキスト内容の更新 (表示/非表示はイベントリスナーで制御)
-    if (tooltipElement) {
-        if (placedSkills[key]) { // このセルがスキルの発動点である場合
-            const skillId = placedSkills[key].skillId;
-            const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
-            if (skill) {
-                tooltipElement.textContent = skill.name;
-                cellElement.classList.add('skill-origin-highlight'); // 発動点にハイライトを追加
-            } else {
-                tooltipElement.textContent = '';
-                cellElement.classList.remove('skill-origin-highlight'); // スキルがない場合はハイライトを削除
-            }
-        } else { // スキルの発動点ではない場合
-            tooltipElement.textContent = '';
-            cellElement.classList.remove('skill-origin-highlight'); // 発動点ではない場合はハイライトを削除
-        }
+    // スキル発動点のハイライトの更新
+    if (placedSkills[key]) { // このセルがスキルの発動点である場合
+        cellElement.classList.add('skill-origin-highlight'); // 発動点にハイライトを追加
+    } else {
+        cellElement.classList.remove('skill-origin-highlight'); // スキルがない場合はハイライトを削除
     }
 }
 

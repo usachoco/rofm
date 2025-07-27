@@ -1,6 +1,7 @@
 import { createGrid } from './grid.js';
 import { clearAllCharacters, deleteCharacter } from './character.js';
-import { clearAllSkillEffects, deleteSkill } from './skill.js'; // deleteSkill をインポート
+import { clearAllSkillEffects, deleteSkill } from './skill.js';
+import { updateCharacterMemo, placedCharacters } from './data.js'; // updateCharacterMemo と placedCharacters をインポート
 
 let contextMenu = null; // コンテキストメニュー要素を保持する変数
 
@@ -73,6 +74,22 @@ export function showContextMenu(xPos, yPos, targetX, targetY, type, formationGri
         contextMenu.style.display = 'none'; // メニューを非表示にする
     });
     contextMenu.appendChild(deleteOption);
+
+    if (type === 'character') {
+        const memoOption = document.createElement('div');
+        memoOption.classList.add('context-menu-item');
+        memoOption.textContent = 'メモを追記';
+        memoOption.addEventListener('click', () => {
+            const currentMemo = placedCharacters[`${targetX}-${targetY}`]?.memo || '';
+            const newMemo = prompt('メモを入力してください:', currentMemo);
+            if (newMemo !== null) { // キャンセルされなかった場合
+                updateCharacterMemo(targetX, targetY, newMemo);
+                resultText.textContent = `キャラクター(${targetX},${targetY})のメモを更新しました。`;
+            }
+            contextMenu.style.display = 'none'; // メニューを非表示にする
+        });
+        contextMenu.appendChild(memoOption);
+    }
 
     contextMenu.style.left = `${xPos}px`;
     contextMenu.style.top = `${yPos}px`;
