@@ -305,7 +305,7 @@ function getCircleRangeCells(centerX, centerY, radius) {
  * @param {object} end 終了点 {x: number, y: number}
  * @returns {Array<object>} 線分上のセルの座標の配列。例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-export function getLineOfSightCells(start, end) {
+export function OLDgetLineOfSightCells(start, end) {
     // 基本はブレゼンハムの線分アルゴリズムを採用
     const cells = [];
     let x0 = start.x;
@@ -339,6 +339,68 @@ export function getLineOfSightCells(start, end) {
     }
     return cells;
 }
+
+/**
+ * テスト用・第一象限のみ誤差なし
+ * @param {*} start 
+ * @param {*} end 
+ * @returns 
+ */
+export function getLineOfSightCells(start, end) {
+    let x0 = start.x;
+    let y0 = start.y;
+    let dx = end.x - x0;
+    let dy = end.y - y0;
+    const stepX = (dx >= 0) ? 1 : -1;
+    const stepY = (dy >= 0) ? 1 : -1;
+    dx = Math.abs(dx);
+    dy = Math.abs(dy);
+
+    const cells = [{ x: start.x, y: start.y }];
+    if (dx >= dy) { // 正方形・横長
+        // 第一象限・第ニ象限 誤差なし
+        let tmpNable = 1;
+        // 第三象限・第四象限 誤差あり
+        let nabla = tmpNable * dy - dx;
+        while (x0 !== end.x) {
+            x0 += stepX;
+            if (nabla >= 0) {
+                y0 += stepY;
+                nabla -= tmpNable * dx;
+            }
+            nabla += tmpNable * dy;
+            // --- 障害物判定 ---
+            const cellStatus = mapData[y0][x0];
+            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                return [];
+            }
+            // -----------------
+            cells.push({ x: x0, y: y0 });
+        }
+    } else {    // 縦長
+        // 第一象限・第四象限 誤差無し
+        let tmpNable = 1;
+        // 第二象限・第三象限 誤差あり
+        let nabla = tmpNable * dx - dy;
+        while (y0 !== end.y) {
+            y0 += stepY;
+            if (nabla >= 0) {
+                x0 += stepX;
+                nabla -= tmpNable * dy;
+            }
+            nabla += tmpNable * dx;
+            // --- 障害物判定 ---
+            const cellStatus = mapData[y0][x0];
+            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                return [];
+            }
+            // -----------------
+            cells.push({ x: x0, y: y0 });
+        }
+    }
+    return cells;
+}
+
 
 /**
  * 障害物で遮られずに線分が成立するか調べる
