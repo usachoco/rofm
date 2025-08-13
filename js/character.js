@@ -98,19 +98,18 @@ function setupCharacterButton(button, resultText, formationGrid) {
  * @param {*} cell 
  * @param {*} x 
  * @param {*} y 
- * @param {*} enableCollisionCheckbox 
  * @param {*} resultText 
  * @returns 
  */
-export function placeCharacter(cell, x, y, enableCollisionCheckbox, resultText) {
+export function placeCharacter(cell, x, y, resultText) {
     const cellKey = `${x}-${y}`;
     // 侵入不可セルへの配置を禁止
     if (mapData[y][x] & CELL_STATUS.UNWALKABLE) {
         resultText.textContent = `(${x},${y})は侵入不可セルです。キャラクターを配置できません。`;
         return;
     }
-    if (placedCharacters[cellKey] && enableCollisionCheckbox.checked) {
-        resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。衝突判定が有効です。`;
+    if (placedCharacters[cellKey]) {
+        resultText.textContent = `(${x},${y})には既に${placedCharacters[cellKey].name}が配置されています。`;
         return;
     }
     if (cell.classList.contains('has-character')) {

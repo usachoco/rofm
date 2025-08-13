@@ -3,6 +3,7 @@ import { mapData, CELL_STATUS, placedCharacters, placedSkills, cellSkillEffects,
 import { selectedCharacter, selectedCharacterType, placeCharacter } from './character.js';
 import { selectedSkill, showTemporarySkillEffectRange, hideTemporarySkillEffectRange, placeSkill, TEMP_SKILL_ID } from './skill.js';
 import { getIsLineOfSightMode, getFixedLineOfSightTarget, setFixedLineOfSightTarget, applyLineOfSightHighlight, handleLineOfSightMouseOver, clearLineOfSightHighlights } from './mode.js';
+import { getStatusTooltip } from './global.js';
 
 let draggedCharacterElement = null; // ドラッグ中のキャラクター要素
 let originalCell = null; // ドラッグ開始時のセル
@@ -16,7 +17,6 @@ let mapOffsetY = 0; // マップの現在のYオフセット
 let animationFrameId = null; // requestAnimationFrame のID
 
 const enableCollisionCheckbox = document.getElementById('enable-collision');
-const showTooltipsCheckbox = document.getElementById('show-tooltips'); // 新しく追加
 const resultText = document.getElementById('result-text');
 
 /**
@@ -61,7 +61,9 @@ export function createGrid(formationGrid) {
             updateCellSkillOverlay(cell, j, i);
         }
     }
-    updateGridLines(formationGrid);
+    formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.style.border = '1px solid #ddd';
+    });
     setupGridEventListeners(formationGrid);
 }
 
@@ -213,7 +215,7 @@ function setupGridEventListeners(formationGrid) {
             const y = parseInt(event.target.dataset.y);
             if (selectedCharacter && selectedCharacterType) {
                 // キャラクター設置モード
-                placeCharacter(event.target, x, y, enableCollisionCheckbox, resultText);
+                placeCharacter(event.target, x, y, resultText);
             } else if (selectedSkill) { // selectedSkillSize の代わりに selectedSkill を使用
                 // スキル設置モード
                 placeSkill(selectedSkill, x, y, formationGrid, resultText);
@@ -271,7 +273,7 @@ function setupGridEventListeners(formationGrid) {
             // キャラクターのメモツールチップの表示
             if (placedCharacters[cellKey] && placedCharacters[cellKey].memo && characterTooltipElement) {
                 characterTooltipElement.textContent = placedCharacters[cellKey].memo;
-                if (showTooltipsCheckbox.checked || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
+                if (getStatusTooltip() || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
                     characterTooltipElement.style.opacity = '1';
                     characterTooltipElement.style.visibility = 'visible';
                 }
@@ -289,7 +291,7 @@ function setupGridEventListeners(formationGrid) {
                 const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
                 if (skill) {
                     skillTooltipElement.textContent = skill.name;
-                    if (showTooltipsCheckbox.checked || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
+                    if (getStatusTooltip() || event.type === 'mouseover') { // チェックされているか、マウスオーバー時のみ表示
                         skillTooltipElement.style.opacity = '1';
                         skillTooltipElement.style.visibility = 'visible';
                     }
@@ -319,7 +321,7 @@ function setupGridEventListeners(formationGrid) {
 
             // マウスが外れたらツールチップを非表示
             // showTooltipsCheckbox がチェックされていない場合のみ非表示にする
-            if (!showTooltipsCheckbox.checked) {
+            if (!getStatusTooltip()) {
                 if (skillTooltipElement) {
                     skillTooltipElement.style.opacity = '0';
                     skillTooltipElement.style.visibility = 'hidden';
@@ -344,37 +346,15 @@ function setupGridEventListeners(formationGrid) {
 }
 
 /**
- * グリッドラインの表示・非表示チェックボックスにイベントリスナーを設定する
- * @param {*} formationGrid 
- */
-export function setupGridLinesCheckbox(formationGrid) {
-    // グリッド線表示チェックボックスのイベントリスナー
-    const showGridLinesCheckbox = document.getElementById('show-grid-lines');
-    showGridLinesCheckbox.addEventListener('change', () => 
-        updateGridLines(formationGrid)
-    );
-}
-
-/**
- * ツールチップ表示チェックボックスにイベントリスナーを設定する
- */
-export function setupTooltipsCheckbox() {
-    showTooltipsCheckbox.addEventListener('change', () => {
-        updateAllTooltipsVisibility();
-    });
-}
-
-/**
  * キャラクターツールチップの可視化状態を更新する
  * @param {*} cell 
  * @param {*} cellKey 
  */
 export function updateCharacterTooltipsVisibility(cell, cellKey) {
-    const showTooltips = showTooltipsCheckbox.checked;
     const characterTooltipElement = cell.querySelector('.character-tooltip');
     if (placedCharacters[cellKey] && placedCharacters[cellKey].memo && characterTooltipElement) {
         characterTooltipElement.textContent = placedCharacters[cellKey].memo;
-        if (showTooltips) {
+        if (getStatusTooltip()) {
             characterTooltipElement.style.opacity = '1';
             characterTooltipElement.style.visibility = 'visible';
         } else {
@@ -396,14 +376,13 @@ export function updateCharacterTooltipsVisibility(cell, cellKey) {
  * @param {*} cellKey 
  */
 export function updateSkillTooltipsVisibility(cell, cellKey) {
-    const showTooltips = showTooltipsCheckbox.checked;
     const skillTooltipElement = cell.querySelector('.skill-tooltip');
     if (placedSkills[cellKey] && skillTooltipElement) {
         const skillId = placedSkills[cellKey].skillId;
         const skill = SKILL_RANGE_LIST.find(s => s.id === skillId);
         if (skill) {
             skillTooltipElement.textContent = skill.name;
-            if (showTooltips) {
+            if (getStatusTooltip()) {
                 skillTooltipElement.style.opacity = '1';
                 skillTooltipElement.style.visibility = 'visible';
             } else {
@@ -433,23 +412,6 @@ export function updateAllTooltipsVisibility() {
         // スキルツールチップの更新
         updateSkillTooltipsVisibility(cell, cellKey);
     });
-}
-
-/**
- * グリッド領域のライン表示・非表示を切り替える
- * @param {*} formationGrid 
- */
-function updateGridLines(formationGrid) {
-    const showGridLinesCheckbox = document.getElementById('show-grid-lines');
-    if (showGridLinesCheckbox.checked) {
-        formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.style.border = '1px solid #ddd';
-        });
-    } else {
-        formationGrid.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.style.border = 'none';
-        });
-    }
 }
 
 /**
