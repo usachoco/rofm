@@ -371,7 +371,7 @@ footer {
 }
 
 /* 射線可視化モードのボタン */
-#toggle-line-of-sight-mode {
+.toggle-button {
     display: flex; /* アイコンとテキストを横並びにするため */
     align-items: center; /* 垂直方向中央揃え */
     justify-content: center; /* 水平方向中央揃え */
@@ -388,17 +388,17 @@ footer {
     position: relative; /* 擬似要素の基準位置 */
 }
 
-#toggle-line-of-sight-mode:hover {
+.toggle-button:hover {
     background-color: #e0a800;
 }
 
-#toggle-line-of-sight-mode.selected {
+.toggle-button.selected {
     background-color: #28a745; /* ON状態は緑色に */
     color: white;
 }
 
 /* ON状態のボタンにチェックマークを追加 */
-#toggle-line-of-sight-mode.selected::before {
+.toggle-button.selected::before {
     content: '✓'; /* チェックマークのUnicode文字 */
     font-size: 1em;
     margin-right: 8px; /* テキストとの間隔 */
