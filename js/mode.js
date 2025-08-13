@@ -1,4 +1,4 @@
-import { getRangeAffectedCells, clearAllSkillEffects } from './skill.js';
+import { getRangeAffectedCells, clearAllSkillEffects, getLineOfSightCells } from './skill.js';
 import { clearSelectedCharacter } from './character.js';
 
 let isLineOfSightMode = false;
@@ -88,6 +88,23 @@ export function applyLineOfSightHighlight(targetX, targetY) {
 
     const rangeCells = getRangeAffectedCells(targetX, targetY, currentRange);
     rangeCells.forEach(coord => {
+        const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
+        if (targetCell) {
+            targetCell.classList.add('range-highlight');
+        }
+    });
+}
+
+/**
+ * 始点から終点までの線分にハイライトを適用するデバッグ関数
+ * @param {*} startCell 
+ * @param {*} endCell 
+ */
+export function applyDebugLineOfSightHightlight(startCell, endCell) {
+    // 初期化
+    clearLineOfSightHighlights();
+    // 描画
+    getLineOfSightCells(startCell, endCell).forEach(coord => {
         const targetCell = formationGrid.querySelector(`[data-x="${coord.x}"][data-y="${coord.y}"]`);
         if (targetCell) {
             targetCell.classList.add('range-highlight');

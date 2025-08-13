@@ -16,7 +16,6 @@ let mapOffsetX = 0; // マップの現在のXオフセット
 let mapOffsetY = 0; // マップの現在のYオフセット
 let animationFrameId = null; // requestAnimationFrame のID
 
-const enableCollisionCheckbox = document.getElementById('enable-collision');
 const resultText = document.getElementById('result-text');
 
 /**

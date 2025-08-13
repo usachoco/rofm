@@ -37,7 +37,9 @@ export const ALLY_CHARACTERS = [
     { id: 'WH', name: 'ウィンドホーク' },
     { id: 'NW', name: 'ナイトウォッチ' },
     { id: 'HN', name: 'ハイパーノービス' },
-    { id: 'SD', name: 'スピリットハンドラー' }
+    { id: 'SD', name: 'スピリットハンドラー' },
+    { id: 'S', name: 'start' },
+    { id: 'E', name: 'end' },
 ];
 
 /** 敵キャラクターの定義 */ 

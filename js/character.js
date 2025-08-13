@@ -1,10 +1,14 @@
 import { placedCharacters, simulateFormation, mapData, CELL_STATUS, ALLY_CHARACTERS, ENEMY_CHARACTERS } from './data.js';
 import { clearSelectedSkill } from './skill.js';
-import { handleCharacterSelectionModeChange } from './mode.js';
+import { handleCharacterSelectionModeChange, applyDebugLineOfSightHightlight } from './mode.js';
 import { updateCharacterTooltipsVisibility } from './grid.js';
 
 export let selectedCharacter = null;
 export let selectedCharacterType = null; // 'ally' or 'enemy'
+
+// Debug
+let debugStartPoint = null;
+let debugEndPoint = null;
 
 /**
  * 指定された座標のキャラクターを削除する
@@ -132,6 +136,18 @@ export function placeCharacter(cell, x, y, resultText) {
     placedCharacters[cellKey] = { name: selectedCharacter, type: selectedCharacterType };
     resultText.textContent = `${selectedCharacter} (${selectedCharacterType === 'ally' ? '味方' : '敵'}) を (${x},${y}) に配置しました。`;
     simulateFormation(resultText);
+    // -------------------------------------------------------
+    // Debug : 始点から終点までの線分を可視化する
+    if (selectedCharacter === 'S') {    // Startシンボル
+        debugStartPoint = { x: x, y: y };
+    }
+    if (selectedCharacter === 'E') {    // Endシンボル
+        debugEndPoint = { x: x, y: y };
+    }
+    if (debugStartPoint && debugEndPoint) {
+        applyDebugLineOfSightHightlight(debugStartPoint, debugEndPoint);
+    }
+    // --------------------------------------------------------
 }
 
 /**

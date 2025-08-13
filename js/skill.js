@@ -305,7 +305,7 @@ function getCircleRangeCells(centerX, centerY, radius) {
  * @param {object} end 終了点 {x: number, y: number}
  * @returns {Array<object>} 線分上のセルの座標の配列。例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-function getLineOfSightCells(start, end) {
+export function getLineOfSightCells(start, end) {
     // 基本はブレゼンハムの線分アルゴリズムを採用
     const cells = [];
     let x0 = start.x;
