@@ -341,6 +341,17 @@ function getLineOfSightCells(start, end) {
 }
 
 /**
+ * 障害物で遮られずに線分が成立するか調べる
+ * @param {*} start 
+ * @param {*} end 
+ * @returns {boolean}
+ */
+function assertLineOfSight(start, end) {
+    const cells = getLineOfSightCells(start, end);
+    return (cells.length > 0);
+}
+
+/**
  * 射程範囲内かつ障害物に遮られないセルの座標を返す.
  * @param {number} centerX 円の中心のX座標
  * @param {number} centerY 円の中心のY座標
@@ -354,11 +365,12 @@ export function getRangeAffectedCells(centerX, centerY, radius) {
     // 射程範囲内で射線が通るセルを取得する
     circleRange.forEach(end => {
         const start = {x:centerX, y:centerY};
-        const activeCells = getLineOfSightCells(start, end);
-        if (activeCells.length > 0) {
-            cells = cells.concat(activeCells);
+        if (assertLineOfSight(start, end)) {
+            cells.push(end);
         }
     });
+    return cells;
+    /*
     // 重複しているセルを排除する
     const uniqueActiveCellsMap = new Map();
     cells.forEach((cell) => {
@@ -367,4 +379,5 @@ export function getRangeAffectedCells(centerX, centerY, radius) {
     });
     const uniqueActiveCells = Array.from(uniqueActiveCellsMap.values());
     return uniqueActiveCells;
+    */
 }
