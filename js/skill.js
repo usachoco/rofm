@@ -346,7 +346,7 @@ export function OLDgetLineOfSightCells(start, end) {
  * @param {*} end 
  * @returns 
  */
-export function getLineOfSightCells(start, end) {
+export function TestgetLineOfSightCells(start, end) {
     let x0 = start.x;
     let y0 = start.y;
     let dx = end.x - x0;
@@ -359,16 +359,15 @@ export function getLineOfSightCells(start, end) {
     const cells = [{ x: start.x, y: start.y }];
     if (dx >= dy) { // 正方形・横長
         // 第一象限・第ニ象限 誤差なし
-        let tmpNable = 1;
         // 第三象限・第四象限 誤差あり
-        let nabla = tmpNable * dy - dx;
+        let nabla = dy - dx;
         while (x0 !== end.x) {
             x0 += stepX;
             if (nabla >= 0) {
                 y0 += stepY;
-                nabla -= tmpNable * dx;
+                nabla -= dx;
             }
-            nabla += tmpNable * dy;
+            nabla += dy;
             // --- 障害物判定 ---
             const cellStatus = mapData[y0][x0];
             if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
@@ -379,16 +378,15 @@ export function getLineOfSightCells(start, end) {
         }
     } else {    // 縦長
         // 第一象限・第四象限 誤差無し
-        let tmpNable = 1;
         // 第二象限・第三象限 誤差あり
-        let nabla = tmpNable * dx - dy;
+        let nabla = dx - dy;
         while (y0 !== end.y) {
             y0 += stepY;
             if (nabla >= 0) {
                 x0 += stepX;
-                nabla -= tmpNable * dy;
+                nabla -= dy;
             }
-            nabla += tmpNable * dx;
+            nabla += dx;
             // --- 障害物判定 ---
             const cellStatus = mapData[y0][x0];
             if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
@@ -398,6 +396,118 @@ export function getLineOfSightCells(start, end) {
             cells.push({ x: x0, y: y0 });
         }
     }
+    return cells;
+}
+
+export function Test2getLineOfSightCells(start, end) {
+    let x0 = start.x;
+    let y0 = start.y;
+    let x1 = end.x;
+    let y1 = end.y;
+
+    // 第ニ象限の π/2 領域
+    if (x0 > x1 && y0 > y1) {
+        [y0, y1] = [y1, y0];
+    }
+
+    let dx = end.x - x0;
+    let dy = end.y - y0;
+    const stepX = (dx >= 0) ? 1 : -1;
+    const stepY = (dy >= 0) ? 1 : -1;
+    dx = Math.abs(dx);
+    dy = Math.abs(dy);
+
+    const cells = [{ x: start.x, y: start.y }];
+    if (dx >= dy) { // 正方形・横長
+        // 第一象限・第ニ象限 誤差なし
+        // 第三象限・第四象限 誤差あり
+        let nabla = dy - dx;
+        while (x0 !== end.x) {
+            x0 += stepX;
+            if (nabla >= 0) {
+                y0 += stepY;
+                nabla -= dx;
+            }
+            nabla += dy;
+            // --- 障害物判定 ---
+            const cellStatus = mapData[y0][x0];
+            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                return [];
+            }
+            // -----------------
+            cells.push({ x: x0, y: y0 });
+        }
+    } else {    // 縦長
+        // 第一象限・第四象限 誤差無し
+        // 第二象限・第三象限 誤差あり
+        let nabla = dx - dy;
+        while (y0 !== end.y) {
+            y0 += stepY;
+            if (nabla >= 0) {
+                x0 += stepX;
+                nabla -= dy;
+            }
+            nabla += dx;
+            // --- 障害物判定 ---
+            const cellStatus = mapData[y0][x0];
+            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+                return [];
+            }
+            // -----------------
+            cells.push({ x: x0, y: y0 });
+        }
+    }
+    return cells;
+}
+
+export function getLineOfSightCells(start, end) {
+    const cells = [];
+
+    let [x0, y0] = [start.x, start.y];
+    let [x1, y1] = [end.x, end.y];
+    let [wx, wy] = [0, 0];
+    let weight = 0;
+
+    // 第二・第三象限は第一・第四象限と同じ軌跡なので無駄な計算を省く
+    let dx = x1 - x0;
+    if (dx < 0) {
+        [x0, y0] = [end.x, end.y];
+        [x1, y1] = [start.x, start.y];
+        dx = -dx;
+    }
+    let dy = y1 - y0;
+
+    // 縦長か横長か判断する
+    if (dx > Math.abs(dy)) {
+        weight = dx;
+    } else {
+        weight = Math.abs(dy);
+    }
+
+    // 始点を記録する
+    cells.push({ x: x0, y: y0 });
+
+    // 終点まで計算する
+    while (x0 !== x1 || y0 !== y1) {
+        wx += dx;
+        wy += dy;
+
+        if (wx >= weight) {
+            wx -= weight;
+            x0 += 1;
+        }
+
+        if (wy >= weight) {
+            wy -= weight;
+            y0 += 1;
+        } else if (wy < 0) {
+            wy += weight;
+            y0 -= 1;
+        } 
+
+        cells.push({ x: x0, y: y0 });
+    }
+
     return cells;
 }
 
