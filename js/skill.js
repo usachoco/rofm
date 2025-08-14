@@ -491,12 +491,10 @@ export function getLineOfSightCells(start, end) {
     while (x0 !== x1 || y0 !== y1) {
         wx += dx;
         wy += dy;
-
         if (wx >= weight) {
             wx -= weight;
             x0 += 1;
         }
-
         if (wy >= weight) {
             wy -= weight;
             y0 += 1;
@@ -504,13 +502,29 @@ export function getLineOfSightCells(start, end) {
             wy += weight;
             y0 -= 1;
         } 
-
         cells.push({ x: x0, y: y0 });
+    }
+
+    // dx > dy の場合の後処理
+    if (dx > Math.abs(dy)) {
+        // 左右反転
+        const revCells = cells.toReversed();
+        const tmpCells = [];
+        for (let i = 0; i < cells.length; i++) {
+            tmpCells.push({ x: cells[i].x, y: revCells[i].y });
+        }
+        // 上下反転
+        const minY = Math.min(...tmpCells.map(cell => cell.y));
+        const maxY = Math.max(...tmpCells.map(cell => cell.y));
+        const resultCells = [];
+        for (let i =0; i< tmpCells.length; i++) {
+            resultCells.push({ x: tmpCells[i].x, y: minY + maxY - tmpCells[i].y });
+        }
+        return resultCells;
     }
 
     return cells;
 }
-
 
 /**
  * 障害物で遮られずに線分が成立するか調べる
