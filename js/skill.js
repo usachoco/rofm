@@ -341,127 +341,15 @@ export function OLDgetLineOfSightCells(start, end) {
 }
 
 /**
- * テスト用・第一象限のみ誤差なし
- * @param {*} start 
- * @param {*} end 
- * @returns 
+ * 2次元配列をピクセルグリッドと見なし、線分に含まれるセルの座標を返す.
+ * ただし、障害物で遮られる場合、その線分は成立しないものとして無視する.
+ * 
+ * @param {object} start 開始点 {x: number, y: number}
+ * @param {object} end 終了点 {x: number, y: number}
+ * @returns {Array<object>} 線分上のセルの座標の配列。例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-export function TestgetLineOfSightCells(start, end) {
-    let x0 = start.x;
-    let y0 = start.y;
-    let dx = end.x - x0;
-    let dy = end.y - y0;
-    const stepX = (dx >= 0) ? 1 : -1;
-    const stepY = (dy >= 0) ? 1 : -1;
-    dx = Math.abs(dx);
-    dy = Math.abs(dy);
-
-    const cells = [{ x: start.x, y: start.y }];
-    if (dx >= dy) { // 正方形・横長
-        // 第一象限・第ニ象限 誤差なし
-        // 第三象限・第四象限 誤差あり
-        let nabla = dy - dx;
-        while (x0 !== end.x) {
-            x0 += stepX;
-            if (nabla >= 0) {
-                y0 += stepY;
-                nabla -= dx;
-            }
-            nabla += dy;
-            // --- 障害物判定 ---
-            const cellStatus = mapData[y0][x0];
-            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                return [];
-            }
-            // -----------------
-            cells.push({ x: x0, y: y0 });
-        }
-    } else {    // 縦長
-        // 第一象限・第四象限 誤差無し
-        // 第二象限・第三象限 誤差あり
-        let nabla = dx - dy;
-        while (y0 !== end.y) {
-            y0 += stepY;
-            if (nabla >= 0) {
-                x0 += stepX;
-                nabla -= dy;
-            }
-            nabla += dx;
-            // --- 障害物判定 ---
-            const cellStatus = mapData[y0][x0];
-            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                return [];
-            }
-            // -----------------
-            cells.push({ x: x0, y: y0 });
-        }
-    }
-    return cells;
-}
-
-export function Test2getLineOfSightCells(start, end) {
-    let x0 = start.x;
-    let y0 = start.y;
-    let x1 = end.x;
-    let y1 = end.y;
-
-    // 第ニ象限の π/2 領域
-    if (x0 > x1 && y0 > y1) {
-        [y0, y1] = [y1, y0];
-    }
-
-    let dx = end.x - x0;
-    let dy = end.y - y0;
-    const stepX = (dx >= 0) ? 1 : -1;
-    const stepY = (dy >= 0) ? 1 : -1;
-    dx = Math.abs(dx);
-    dy = Math.abs(dy);
-
-    const cells = [{ x: start.x, y: start.y }];
-    if (dx >= dy) { // 正方形・横長
-        // 第一象限・第ニ象限 誤差なし
-        // 第三象限・第四象限 誤差あり
-        let nabla = dy - dx;
-        while (x0 !== end.x) {
-            x0 += stepX;
-            if (nabla >= 0) {
-                y0 += stepY;
-                nabla -= dx;
-            }
-            nabla += dy;
-            // --- 障害物判定 ---
-            const cellStatus = mapData[y0][x0];
-            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                return [];
-            }
-            // -----------------
-            cells.push({ x: x0, y: y0 });
-        }
-    } else {    // 縦長
-        // 第一象限・第四象限 誤差無し
-        // 第二象限・第三象限 誤差あり
-        let nabla = dx - dy;
-        while (y0 !== end.y) {
-            y0 += stepY;
-            if (nabla >= 0) {
-                x0 += stepX;
-                nabla -= dy;
-            }
-            nabla += dx;
-            // --- 障害物判定 ---
-            const cellStatus = mapData[y0][x0];
-            if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
-                return [];
-            }
-            // -----------------
-            cells.push({ x: x0, y: y0 });
-        }
-    }
-    return cells;
-}
-
 export function getLineOfSightCells(start, end) {
-    const cells = [];
+    let cells = [];
 
     let [x0, y0] = [start.x, start.y];
     let [x1, y1] = [end.x, end.y];
@@ -511,16 +399,29 @@ export function getLineOfSightCells(start, end) {
         const revCells = cells.toReversed();
         const tmpCells = [];
         for (let i = 0; i < cells.length; i++) {
-            tmpCells.push({ x: cells[i].x, y: revCells[i].y });
+            x0 = cells[i].x;
+            y0 = revCells[i].y;
+            tmpCells.push({ x: x0, y: y0 });
         }
         // 上下反転
         const minY = Math.min(...tmpCells.map(cell => cell.y));
         const maxY = Math.max(...tmpCells.map(cell => cell.y));
-        const resultCells = [];
+        cells = [];
         for (let i =0; i< tmpCells.length; i++) {
-            resultCells.push({ x: tmpCells[i].x, y: minY + maxY - tmpCells[i].y });
+            x0 = tmpCells[i].x;
+            y0 = minY + maxY - tmpCells[i].y;
+            cells.push({ x: x0, y: y0 });
         }
-        return resultCells;
+    }
+
+    // 障害物判定
+    for (let i = 0; i < cells.length; i++) {
+        x0 = cells[i].x;
+        y0 = cells[i].y;
+        const cellStatus = mapData[y0][x0];
+        if ((cellStatus & CELL_STATUS.OBSTACLE) === CELL_STATUS.OBSTACLE) {
+            return [];
+        }
     }
 
     return cells;
