@@ -442,11 +442,13 @@ function assertLineOfSight(start, end) {
  * 射程範囲内かつ障害物に遮られないセルの座標を返す.
  * @param {number} centerX 円の中心のX座標
  * @param {number} centerY 円の中心のY座標
- * @param {number} radius 円の半径
+ * @param {number} range 射程距離
  * @returns {Array<Array<number, number>>} セルの座標の配列. 例: [{x: 0, y: 0}, {x: 1, y: 1}]
  */
-export function getRangeAffectedCells(centerX, centerY, radius) {
+export function getRangeAffectedCells(centerX, centerY, range) {
     let cells = [];
+    // プレイヤー補正で射程を+1する
+    const radius = range + 1;
     // 射程範囲円を取得する
     const circleRange = getCircleRangeCells(centerX, centerY, radius);
     // 射程範囲内で射線が通るセルを取得する
@@ -457,14 +459,4 @@ export function getRangeAffectedCells(centerX, centerY, radius) {
         }
     });
     return cells;
-    /*
-    // 重複しているセルを排除する
-    const uniqueActiveCellsMap = new Map();
-    cells.forEach((cell) => {
-        const key = `${cell.x}_${cell.y}`;
-        uniqueActiveCellsMap.set(key, cell);
-    });
-    const uniqueActiveCells = Array.from(uniqueActiveCellsMap.values());
-    return uniqueActiveCells;
-    */
 }
